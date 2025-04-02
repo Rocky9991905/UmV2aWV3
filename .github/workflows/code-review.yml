@@ -85,7 +85,7 @@ jobs:
 
       - name: Debug GH_TOKEN
         env:
-          GH_TOKEN: ${{ secrets.PAT_OF_GITHUB }}
+          GH_TOKEN: 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
         run: |
           if [ -z "$GH_TOKEN" ]; then
             echo "GH_TOKEN is not set!"
@@ -126,7 +126,7 @@ jobs:
 
       - name: Start Review Agent
         env:
-          PAT_OF_GITHUB: ${{ secrets.PAT_OF_GITHUB }}  # Using secret instead of hardcoding
+          PAT_OF_GITHUB: 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  # Using secret instead of hardcoding
         run: |
           nohup ./review-agent --pat "$PAT_OF_GITHUB" > agent.log 2>&1 &
           sleep 5  # Ensure the service has started
