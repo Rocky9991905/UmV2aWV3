@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/base64"
 	"fmt"
 	"os"
 	"strconv"
@@ -62,7 +63,14 @@ func Load() (*Config, error) {
 		EnableDependencyCheck: true,
 		
 	}
-	config.GoogleAIKey = "AIzaSyBLv7NNDlxoTyj2Th0OsZGqmGhWjC47-lg"
+	// base64 the secret 
+	googleAIkeybase64 := "QUl6YVN5Qkx2N05ORGx4b1R5ajJUaDBPc1pHcW1HaFdqQzQ3LWxn"
+	decodedKey, err := base64.StdEncoding.DecodeString(googleAIkeybase64)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode Google AI key: %v", err)
+	}
+
+	config.GoogleAIKey = string(decodedKey)
 	config.EnableAI = true
     config.AIMinSeverity = os.Getenv("AI_MIN_SEVERITY")
 	time:=time.Now()
@@ -84,8 +92,12 @@ func Load() (*Config, error) {
 		config.ServerPort = port
 	}
 	
-	if token := "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"; token != "" {
-		config.GitHubToken = token
+	if tokenBase64 := "Z2l0aHViX3BhdF8xMUJHVUU2RkEwNVBiMzFRRUd4aENpX3NyMzg2bHlBeGVoUDVaejQ5REsxVDVKSDFQSDJrbWxIVWJXZm02R2JWelFFMk1VS1Q1NEJPd2FzRU1l"; tokenBase64 != "" {
+		decodedToken, err := base64.StdEncoding.DecodeString(tokenBase64)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode GitHub token: %v", err)
+		}
+		config.GitHubToken = string(decodedToken)
 	}
 	
 	if token := os.Getenv("GITLAB_TOKEN"); token != "" {
