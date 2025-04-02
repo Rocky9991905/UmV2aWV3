@@ -46,19 +46,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-golangci-lint-
 
-      - name: Install Dependencies (Go, Node.js, ESLint, GolangCI-Lint, GitHub CLI)
-        run: |
-          sudo apt install -y golang nodejs npm gh
+      # - name: Install Dependencies (Go, Node.js, ESLint, GolangCI-Lint, GitHub CLI)
+      #   run: |
+      #     sudo apt install -y golang nodejs npm gh
           
-          # Install npm dependencies only if not cached
-          if [ ! -d "~/.npm" ]; then
-            npm install -g eslint
-          fi
+      #     # Install npm dependencies only if not cached
+      #     if [ ! -d "~/.npm" ]; then
+      #       npm install -g eslint
+      #     fi
 
-          # Install GolangCI-Lint only if not cached
-          if [ ! -f "/usr/local/bin/golangci-lint" ]; then
-            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b /usr/local/bin v1.55.2
-          fi
+      #     # Install GolangCI-Lint only if not cached
+      #     if [ ! -f "/usr/local/bin/golangci-lint" ]; then
+      #       curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b /usr/local/bin v1.55.2
+      #     fi
 
       - name: Setup Go environment
         uses: actions/setup-go@v4
@@ -85,7 +85,7 @@ jobs:
 
       - name: Debug GH_TOKEN
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_OF_GITHUB }}
         run: |
           if [ -z "$GH_TOKEN" ]; then
             echo "GH_TOKEN is not set!"
