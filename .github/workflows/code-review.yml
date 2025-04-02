@@ -82,9 +82,22 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh auth status || gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
 
+
+      - name: Debug GH_TOKEN
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "GH_TOKEN is not set!"
+            exit 1
+          else
+            echo "GH_TOKEN is set correctly."
+          fi
+
+
       - name: Configure GitHub webhook
         env:
-          GH_TOKEN: ${{ secrets.PAT_OF_GITHUB }}  # Use PAT instead of GITHUB_TOKEN
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Ensure GH_TOKEN is set
         run: |
           REPO_URL="https://api.github.com/repos/${{ github.repository }}/hooks"
           WEBHOOK_URL="${{ env.NGROK_URL }}/webhook"
