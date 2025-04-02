@@ -50,7 +50,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          REPO_URL="https://api.github.com/repos/Per0x1de-1337/Review/hooks"
+          REPO_URL="https://api.github.com/repos/Rocky9991905/Testingpayloads/hooks"
           WEBHOOK_URL="${{ env.NGROK_URL }}/webhook"
           
           HOOK_ID=$(gh api $REPO_URL --jq '.[] | select(.config.url=="'"$WEBHOOK_URL"'") | .id' || echo "")
