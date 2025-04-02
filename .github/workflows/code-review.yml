@@ -1,0 +1,81 @@
+name: Code Review Agent CI/CD
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    env:
+      REVIEW_PORT: 8080
+      WEBHOOK_PORT: 6969
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Update system packages
+        run: sudo apt update
+
+      - name: Install Dependencies (Go, Node.js, ESLint, GolangCI-Lint, GitHub CLI)
+        run: |
+          sudo apt install -y golang nodejs npm gh
+          npm install -g eslint
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b /usr/local/bin v1.55.2
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+
+      - name: Start ngrok tunnel
+        uses: LuisBoto/ngrok-tunnel-action@v0.1.7.2
+        with:
+          ngrok_authtoken: ${{ secrets.NGROK_AUTH_TOKEN }}  # Use secret instead of hardcoding
+          port: 6969
+          tunnel_type: http
+          timeout: 1h
+          save_url_to_filename: ngrok_url.txt
+
+      - name: Retrieve ngrok URL
+        run: echo "NGROK_URL=$(cat ngrok_url.txt)" >> $GITHUB_ENV
+
+      - name: Authenticate GitHub CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh auth status || gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Configure GitHub webhook
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPO_URL="https://api.github.com/repos/${{ github.repository }}/hooks"
+          WEBHOOK_URL="${{ env.NGROK_URL }}/webhook"
+          
+          HOOK_ID=$(gh api $REPO_URL --jq '.[] | select(.config.url=="'"$WEBHOOK_URL"'") | .id' || echo "")
+          
+          if [ -z "$HOOK_ID" ]; then
+            echo "Creating new webhook..."
+            gh api --method POST $REPO_URL -f name='web' -f config='{"url": "'"$WEBHOOK_URL"'", "content_type": "json"}' -f events='["pull_request"]'
+          else
+            echo "Updating existing webhook..."
+            gh api --method PATCH $REPO_URL/$HOOK_ID -f config='{"url": "'"$WEBHOOK_URL"'", "content_type": "json"}' -f events='["pull_request"]'
+          fi
+
+      - name: Initialize Go module & Install Dependencies
+        run: |
+          go mod tidy
+
+      - name: Build Review Agent
+        run: go build -o review-agent .
+
+      - name: Start Review Agent
+        env:
+          PAT_OF_GITHUB: ${{ secrets.PAT_OF_GITHUB }}  # Use secret instead of hardcoding
+        run: |
+          nohup ./review-agent --pat "$PAT_OF_GITHUB" > agent.log 2>&1 &
+          sleep 5  # Ensure the service has started
+
+      - name: Display Agent Logs
+        run: cat agent.log
