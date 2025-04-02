@@ -82,13 +82,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh auth status || gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
 
-      - name: Configure GitHub Webhook for PR Events
+      - name: Configure GitHub webhook
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.PAT_OF_GITHUB }}  # Use PAT instead of GITHUB_TOKEN
         run: |
-          REPO_URL="https://api.github.com/repos/Rocky9991905/Testingpayloads/hooks"
+          REPO_URL="https://api.github.com/repos/${{ github.repository }}/hooks"
           WEBHOOK_URL="${{ env.NGROK_URL }}/webhook"
-          
+
           HOOK_ID=$(gh api $REPO_URL --jq '.[] | select(.config.url=="'"$WEBHOOK_URL"'") | .id' || echo "")
 
           if [ -z "$HOOK_ID" ]; then
@@ -103,6 +103,7 @@ jobs:
               -f config='{"url": "'"$WEBHOOK_URL"'", "content_type": "json"}' \
               -f events='["pull_request"]'
           fi
+
 
       - name: Initialize Go module & Install Dependencies
         run: go mod tidy
