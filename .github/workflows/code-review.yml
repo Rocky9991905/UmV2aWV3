@@ -94,7 +94,8 @@ jobs:
             echo "GH_TOKEN is set correctly."
           fi
 
-      - name: Check auth status
+      - name: login now
+        run: gh auth login --with-token <<< "$GH_TOKEN"
         run: gh auth status
       - name: Configure GitHub webhook
         env:
