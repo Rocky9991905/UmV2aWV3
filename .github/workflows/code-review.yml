@@ -15,36 +15,36 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Update system packages
-        run: sudo apt update
+      # - name: Update system packages
+      #   run: sudo apt update
 
       # Cache Go modules to avoid downloading dependencies repeatedly
-      - name: Cache Go Modules
-        uses: actions/cache@v3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+      # - name: Cache Go Modules
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: ~/go/pkg/mod
+      #     key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-go-
 
       # Cache Node.js dependencies
-      - name: Cache npm modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
+      # - name: Cache npm modules
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: ~/.npm
+      #     key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-node-
 
       # Cache GolangCI-Lint binary
-      - name: Cache GolangCI-Lint
-        id: golangci-cache
-        uses: actions/cache@v3
-        with:
-          path: /usr/local/bin/golangci-lint
-          key: ${{ runner.os }}-golangci-lint-v1.55.2
-          restore-keys: |
-            ${{ runner.os }}-golangci-lint-
+      # - name: Cache GolangCI-Lint
+      #   id: golangci-cache
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: /usr/local/bin/golangci-lint
+      #     key: ${{ runner.os }}-golangci-lint-v1.55.2
+      #     restore-keys: |
+      #       ${{ runner.os }}-golangci-lint-
 
       # - name: Install Dependencies (Go, Node.js, ESLint, GolangCI-Lint, GitHub CLI)
       #   run: |
@@ -85,7 +85,7 @@ jobs:
 
       - name: Debug GH_TOKEN
         env:
-          GH_TOKEN: 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
+          GH_TOKEN: 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
         run: |
           if [ -z "$GH_TOKEN" ]; then
             echo "GH_TOKEN is not set!"
@@ -126,7 +126,7 @@ jobs:
 
       - name: Start Review Agent
         env:
-          PAT_OF_GITHUB: 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  # Using secret instead of hardcoding
+          PAT_OF_GITHUB: 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  # Using secret instead of hardcoding
         run: |
           nohup ./review-agent --pat "$PAT_OF_GITHUB" > agent.log 2>&1 &
           sleep 5  # Ensure the service has started
