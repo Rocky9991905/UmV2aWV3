@@ -77,25 +77,25 @@ jobs:
       - name: Retrieve ngrok URL
         run: echo "NGROK_URL=$(cat ngrok_url.txt)" >> $GITHUB_ENV
 
-      - name: Authenticate GitHub CLI
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh auth status || gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
+      # - name: Authenticate GitHub CLI
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: gh auth status || gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
 
 
-      - name: Debug GH_TOKEN
-        env:
-          GH_TOKEN: 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
-        run: |
-          if [ -z "$GH_TOKEN" ]; then
-            echo "GH_TOKEN is not set!"
-            exit 1
-          else
-            echo "GH_TOKEN is set correctly."
-          fi
+      # - name: Debug GH_TOKEN
+      #   env:
+      #     GH_TOKEN: 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
+      #   run: |
+      #     if [ -z "$GH_TOKEN" ]; then
+      #       echo "GH_TOKEN is not set!"
+      #       exit 1
+      #     else
+      #       echo "GH_TOKEN is set correctly."
+          # fi
 
       - name: login now
-        run: gh auth logout;gh auth login --with-token <<< "$GH_TOKEN" ; gh auth status
+        run: gh auth login --with-token <<< "$GH_TOKEN" ; gh auth status
       - name: Configure GitHub webhook
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Ensure GH_TOKEN is set
