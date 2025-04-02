@@ -32,7 +32,7 @@ jobs:
       - name: Start ngrok tunnel
         uses: LuisBoto/ngrok-tunnel-action@v0.1.7.2
         with:
-          ngrok_authtoken: ${{ secrets.NGROK_AUTH_TOKEN }}  # Use secret instead of hardcoding
+          ngrok_authtoken: 2rqMCQpGwy8Hefx932ZJQCVS0U0_35MwNuTKQeaCf8Kst8LPL  # Use secret instead of hardcoding
           port: 6969
           tunnel_type: http
           timeout: 1h
