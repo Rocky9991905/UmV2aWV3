@@ -1,0 +1,16 @@
+# Dirsearch started Sun Mar 30 23:26:45 2025 as: /usr/lib/python3/dist-packages/dirsearch/dirsearch.py -u http://3.82.112.135:8088
+
+302   208B   http://3.82.112.135:8088/back    -> REDIRECTS TO: http://3.82.112.135:8088/
+200     2KB  http://3.82.112.135:8088/console
+200     2B   http://3.82.112.135:8088/health
+308   268B   http://3.82.112.135:8088/login    -> REDIRECTS TO: http://3.82.112.135:8088/login/
+200    24KB  http://3.82.112.135:8088/login/
+308   270B   http://3.82.112.135:8088/logout    -> REDIRECTS TO: http://3.82.112.135:8088/logout/
+302   208B   http://3.82.112.135:8088/logout/    -> REDIRECTS TO: http://3.82.112.135:8088/
+200     2B   http://3.82.112.135:8088/ping
+302   342B   http://3.82.112.135:8088/swagger/index.html    -> REDIRECTS TO: http://3.82.112.135:8088/login/?next=http%3A%2F%2F3.82.112.135%3A8088%2Fswagger%2Findex.html
+302   338B   http://3.82.112.135:8088/swagger/api-docs    -> REDIRECTS TO: http://3.82.112.135:8088/login/?next=http%3A%2F%2F3.82.112.135%3A8088%2Fswagger%2Fapi-docs
+302   326B   http://3.82.112.135:8088/swagger/ui    -> REDIRECTS TO: http://3.82.112.135:8088/login/?next=http%3A%2F%2F3.82.112.135%3A8088%2Fswagger%2Fui
+302   352B   http://3.82.112.135:8088/swagger/swagger-ui.html    -> REDIRECTS TO: http://3.82.112.135:8088/login/?next=http%3A%2F%2F3.82.112.135%3A8088%2Fswagger%2Fswagger-ui.html
+302   350B   http://3.82.112.135:8088/swagger/swagger-ui.htm    -> REDIRECTS TO: http://3.82.112.135:8088/login/?next=http%3A%2F%2F3.82.112.135%3A8088%2Fswagger%2Fswagger-ui.htm
+302   336B   http://3.82.112.135:8088/swagger/swagger    -> REDIRECTS TO: http://3.82.112.135:8088/login/?next=http%3A%2F%2F3.82.112.135%3A8088%2Fswagger%2Fswagger

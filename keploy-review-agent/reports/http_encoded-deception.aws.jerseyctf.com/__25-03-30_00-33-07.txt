@@ -1,0 +1,26 @@
+# Dirsearch started Sun Mar 30 00:34:39 2025 as: /usr/lib/python3/dist-packages/dirsearch/dirsearch.py -u http://encoded-deception.aws.jerseyctf.com/
+
+403   199B   http://encoded-deception.aws.jerseyctf.com/.ht_wsr.txt
+403   199B   http://encoded-deception.aws.jerseyctf.com/.htaccess.bak1
+403   199B   http://encoded-deception.aws.jerseyctf.com/.htaccess.orig
+403   199B   http://encoded-deception.aws.jerseyctf.com/.htaccess.save
+403   199B   http://encoded-deception.aws.jerseyctf.com/.htaccess.sample
+403   199B   http://encoded-deception.aws.jerseyctf.com/.htaccess_extra
+403   199B   http://encoded-deception.aws.jerseyctf.com/.htaccess_orig
+403   199B   http://encoded-deception.aws.jerseyctf.com/.htaccess_sc
+403   199B   http://encoded-deception.aws.jerseyctf.com/.htaccessOLD
+403   199B   http://encoded-deception.aws.jerseyctf.com/.htaccessBAK
+403   199B   http://encoded-deception.aws.jerseyctf.com/.htaccessOLD2
+403   199B   http://encoded-deception.aws.jerseyctf.com/.html
+403   199B   http://encoded-deception.aws.jerseyctf.com/.htm
+403   199B   http://encoded-deception.aws.jerseyctf.com/.htpasswd_test
+403   199B   http://encoded-deception.aws.jerseyctf.com/.htpasswds
+403   199B   http://encoded-deception.aws.jerseyctf.com/.httr-oauth
+403   199B   http://encoded-deception.aws.jerseyctf.com/.user.ini
+403   199B   http://encoded-deception.aws.jerseyctf.com/assets/
+301   258B   http://encoded-deception.aws.jerseyctf.com/assets    -> REDIRECTS TO: http://encoded-deception.aws.jerseyctf.com/assets/
+403   199B   http://encoded-deception.aws.jerseyctf.com/cgi-bin/
+404    16B   http://encoded-deception.aws.jerseyctf.com/composer.phar
+200    20B   http://encoded-deception.aws.jerseyctf.com/info.php
+404    16B   http://encoded-deception.aws.jerseyctf.com/php-cs-fixer.phar
+404    16B   http://encoded-deception.aws.jerseyctf.com/phpunit.phar

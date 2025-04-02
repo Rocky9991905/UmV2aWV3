@@ -1,0 +1,6 @@
+# Dirsearch started Sun Mar 30 01:58:39 2025 as: /usr/lib/python3/dist-packages/dirsearch/dirsearch.py -u http://leaky-endpoints.aws.jerseyctf.com/
+
+301    43B   http://leaky-endpoints.aws.jerseyctf.com/static    -> REDIRECTS TO: /static/
+404     0B   http://leaky-endpoints.aws.jerseyctf.com/static/dump.sql
+404     0B   http://leaky-endpoints.aws.jerseyctf.com/static/api/swagger.json
+404     0B   http://leaky-endpoints.aws.jerseyctf.com/static/api/swagger.yaml
