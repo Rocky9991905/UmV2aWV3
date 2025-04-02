@@ -95,7 +95,7 @@ jobs:
           # fi
 
       - name: login now
-        run: gh auth login --with-token <<< "$GH_TOKEN" ; gh auth status
+        run: gh auth login --scopes "repo,admin:repo_hook,workflow" ; gh auth status
       - name: Configure GitHub webhook
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Ensure GH_TOKEN is set
