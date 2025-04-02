@@ -46,22 +46,28 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh auth status || gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
 
-      - name: Configure GitHub webhook
+      - name: Configure GitHub Webhook for PR Events
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          REPO_URL="https://api.github.com/repos/${{ github.repository }}/hooks"
+          REPO_URL="https://api.github.com/repos/Per0x1de-1337/Review/hooks"
           WEBHOOK_URL="${{ env.NGROK_URL }}/webhook"
           
           HOOK_ID=$(gh api $REPO_URL --jq '.[] | select(.config.url=="'"$WEBHOOK_URL"'") | .id' || echo "")
-          
+
           if [ -z "$HOOK_ID" ]; then
-            echo "Creating new webhook..."
-            gh api --method POST $REPO_URL -f name='web' -f config='{"url": "'"$WEBHOOK_URL"'", "content_type": "json"}' -f events='["pull_request"]'
+            echo "Creating new webhook for PR events..."
+            gh api --method POST $REPO_URL \
+              -f name='web' \
+              -f config='{"url": "'"$WEBHOOK_URL"'", "content_type": "json"}' \
+              -f events='["pull_request"]'
           else
-            echo "Updating existing webhook..."
-            gh api --method PATCH $REPO_URL/$HOOK_ID -f config='{"url": "'"$WEBHOOK_URL"'", "content_type": "json"}' -f events='["pull_request"]'
+            echo "Updating existing webhook for PR events..."
+            gh api --method PATCH $REPO_URL/$HOOK_ID \
+              -f config='{"url": "'"$WEBHOOK_URL"'", "content_type": "json"}' \
+              -f events='["pull_request"]'
           fi
+
 
       - name: Initialize Go module & Install Dependencies
         run: |
