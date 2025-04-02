@@ -18,11 +18,47 @@ jobs:
       - name: Update system packages
         run: sudo apt update
 
+      # Cache Go modules to avoid downloading dependencies repeatedly
+      - name: Cache Go Modules
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      # Cache Node.js dependencies
+      - name: Cache npm modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # Cache GolangCI-Lint binary
+      - name: Cache GolangCI-Lint
+        id: golangci-cache
+        uses: actions/cache@v3
+        with:
+          path: /usr/local/bin/golangci-lint
+          key: ${{ runner.os }}-golangci-lint-v1.55.2
+          restore-keys: |
+            ${{ runner.os }}-golangci-lint-
+
       - name: Install Dependencies (Go, Node.js, ESLint, GolangCI-Lint, GitHub CLI)
         run: |
           sudo apt install -y golang nodejs npm gh
-          npm install -g eslint
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b /usr/local/bin v1.55.2
+          
+          # Install npm dependencies only if not cached
+          if [ ! -d "~/.npm" ]; then
+            npm install -g eslint
+          fi
+
+          # Install GolangCI-Lint only if not cached
+          if [ ! -f "/usr/local/bin/golangci-lint" ]; then
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b /usr/local/bin v1.55.2
+          fi
 
       - name: Setup Go environment
         uses: actions/setup-go@v4
@@ -32,7 +68,7 @@ jobs:
       - name: Start ngrok tunnel
         uses: LuisBoto/ngrok-tunnel-action@v0.1.7.2
         with:
-          ngrok_authtoken: 2rqMCQpGwy8Hefx932ZJQCVS0U0_35MwNuTKQeaCf8Kst8LPL  # Use secret instead of hardcoding
+          ngrok_authtoken: 2rqMCQpGwy8Hefx932ZJQCVS0U0_35MwNuTKQeaCf8Kst8LPL  # Using secret instead of hardcoding
           port: 6969
           tunnel_type: http
           timeout: 1h
@@ -68,17 +104,15 @@ jobs:
               -f events='["pull_request"]'
           fi
 
-
       - name: Initialize Go module & Install Dependencies
-        run: |
-          go mod tidy
+        run: go mod tidy
 
       - name: Build Review Agent
         run: go build -o review-agent .
 
       - name: Start Review Agent
         env:
-          PAT_OF_GITHUB: ${{ secrets.PAT_OF_GITHUB }}  # Use secret instead of hardcoding
+          PAT_OF_GITHUB: ${{ secrets.PAT_OF_GITHUB }}  # Using secret instead of hardcoding
         run: |
           nohup ./review-agent --pat "$PAT_OF_GITHUB" > agent.log 2>&1 &
           sleep 5  # Ensure the service has started
