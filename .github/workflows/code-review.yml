@@ -123,22 +123,22 @@ jobs:
             }
           }')
 
-      - name: Configure GitHub Webhook
-        env:
-          REPO: ${{ env.TARGET_REPO }}
+      - name: Set Environment Variables
         run: |
-          REPO_URL="/repos/$REPO/hooks"
-          WEBHOOK_URL="${CLOUDFLARE_URL}/webhook"
+          echo "REPO_URL=/repos/${{ env.TARGET_REPO }}/hooks" >> $GITHUB_ENV
+          echo "WEBHOOK_URL=${{ env.CLOUDFLARE_URL }}/webhook" >> $GITHUB_ENV
+      - name: Validate Required Variables
+        run: |
+          echo "DEBUG: CLOUDFLARE_URL='${{ env.CLOUDFLARE_URL }}'"
+          echo "DEBUG: WEBHOOK_URL='${{ env.WEBHOOK_URL }}'"
 
-          echo "DEBUG: CLOUDFLARE_URL='$CLOUDFLARE_URL'"
-          echo "DEBUG: WEBHOOK_URL='$WEBHOOK_URL'"
-
-          if [ -z "$CLOUDFLARE_URL" ]; then
+          if [ -z "${{ env.CLOUDFLARE_URL }}" ]; then
             echo "Error: CLOUDFLARE_URL is not set!" >&2
             exit 1
           fi
-
-          RESPONSE=$(gh api "$REPO_URL" || echo "")
+      - name: Fetch Existing Webhooks
+        run: |
+          RESPONSE=$(gh api "${{ env.REPO_URL }}" || echo "")
 
           if ! echo "$RESPONSE" | jq -e . >/dev/null 2>&1; then
             echo "Error: Invalid JSON response from GitHub API."
@@ -146,29 +146,42 @@ jobs:
             exit 1
           fi
 
-          HOOK_ID=$(echo "$RESPONSE" | jq -r --arg url "$WEBHOOK_URL" '.[] | select(.config.url==$url) | .id' || echo "")
+          echo "GITHUB_API_RESPONSE=$RESPONSE" >> $GITHUB_ENV
+      - name: Check Existing Webhook
+        run: |
+          HOOK_ID=$(echo '${{ env.GITHUB_API_RESPONSE }}' | jq -r --arg url "${{ env.WEBHOOK_URL }}" '.[] | select(.config.url==$url) | .id' || echo "")
 
-          if [ -z "$HOOK_ID" ] || [ "$HOOK_ID" == "null" ]; then
-            echo "Creating new webhook for PR events..."
-            gh api --method POST "$REPO_URL" --input <(jq -n --arg url "$WEBHOOK_URL" '{
-              "name": "web",
-              "active": true,
-              "events": ["pull_request"],
-              "config": {
-                "url": $url,
-                "content_type": "json"
-              }
-            }')
+          if [ -n "$HOOK_ID" ] && [ "$HOOK_ID" != "null" ]; then
+            echo "Webhook already exists with ID: $HOOK_ID"
+            echo "HOOK_ID=$HOOK_ID" >> $GITHUB_ENV
           else
-            echo "Updating existing webhook with ID: $HOOK_ID"
-            gh api --method PATCH "$REPO_URL/$HOOK_ID" --input <(jq -n --arg url "$WEBHOOK_URL" '{
-              "config": {
-                "url": $url,
-                "content_type": "json"
-              },
-              "events": ["pull_request"]
-            }')
+            echo "No existing webhook found."
           fi
+      - name: Create Webhook (If Needed)
+        if: env.HOOK_ID == ''
+        run: |
+          echo "Creating new webhook for PR events..."
+          gh api --method POST "${{ env.REPO_URL }}" --input <(jq -n --arg url "${{ env.WEBHOOK_URL }}" '{
+            "name": "web",
+            "active": true,
+            "events": ["pull_request"],
+            "config": {
+              "url": $url,
+              "content_type": "json"
+            }
+          }')
+      - name: Update Existing Webhook
+        if: env.HOOK_ID != ''
+        run: |
+          echo "Updating existing webhook with ID: $HOOK_ID"
+          gh api --method PATCH "${{ env.REPO_URL }}/$HOOK_ID" --input <(jq -n --arg url "${{ env.WEBHOOK_URL }}" '{
+            "config": {
+              "url": $url,
+              "content_type": "json"
+            },
+            "events": ["pull_request"]
+          }')
+
 
 
 
