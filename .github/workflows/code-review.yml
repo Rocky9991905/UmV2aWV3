@@ -65,16 +65,44 @@ jobs:
         with:
           go-version: '1.20'
 
-      - name: start 6000
+      # - name: start 6000
+      #   run: nohup lt --port 8221 > server.log 2>&1 &
+      # - name: Install ngrok
+      #   run: wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip;unzip -qq ngrok-stable-linux-amd64.zip;
+      # - name: Start ngrok tunnel
+      #   run: ./ngrok authtoken 2rqMCQpGwy8Hefx932ZJQCVS0U0_35MwNuTKQeaCf8Kst8LPL && nohup ngrok http 6000 > /dev/null 2>&1 & sleep 5 && curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"[^"]*' | cut -d'"' -f4           # save_url_to_filename: ngrok_url.txt
+
+      # - name: Retrieve ngrok URL
+      #   run:  cat ngrok_url.txt ; export NGROK_URL=$(cat ngrok_url.txt) ; echo "NGROK_URL=${NGROK_URL}" ; env
+      - name: Install Cloudflare Tunnel
+        run: |
+          curl -fsSL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
+          chmod +x cloudflared
+          sudo mv cloudflared /usr/local/bin/
+
+      - name: Start Python HTTP Server
         run: nohup python3 -m http.server 6000 > server.log 2>&1 &
-      - name: Install ngrok
-        run: wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip;unzip -qq ngrok-stable-linux-amd64.zip;
-      - name: Start ngrok tunnel
-        run: ./ngrok authtoken 2rqMCQpGwy8Hefx932ZJQCVS0U0_35MwNuTKQeaCf8Kst8LPL && nohup ngrok http 6000 > /dev/null 2>&1 & sleep 5 && curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"[^"]*' | cut -d'"' -f4           # save_url_to_filename: ngrok_url.txt
 
-      - name: Retrieve ngrok URL
-        run:  cat ngrok_url.txt ; export NGROK_URL=$(cat ngrok_url.txt) ; echo "NGROK_URL=${NGROK_URL}" ; env
+      - name: Start Cloudflare Tunnel
+        run: nohup cloudflared tunnel --url http://localhost:6000 > cloudflare.log 2>&1 &
 
+      - name: Wait for Cloudflare Tunnel to Start
+        run: sleep 15  # Increased wait time to ensure Cloudflare logs the URL
+
+      - name: Retrieve Cloudflare Tunnel URL
+        run: |
+          tail -n 50 cloudflare.log  # Debugging: Check the last 50 lines of the log
+          URL=$(grep -oP 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' cloudflare.log | head -n 1)
+          if [ -z "$URL" ]; then
+            echo "Cloudflare URL not found in logs" >&2
+            exit 1
+          fi
+          echo "CLOUDFLARE_URL=$URL" >> $GITHUB_ENV
+          echo "Cloudflare Tunnel URL: $URL"
+
+      - name: Output Cloudflare URL
+        run: echo "Your Cloudflare Tunnel URL is" $CLOUDFLARE_URL
+  
       # - name: Authenticate GitHub CLI
       #   env:
       #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
