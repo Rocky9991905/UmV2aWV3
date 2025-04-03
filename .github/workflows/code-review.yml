@@ -10,6 +10,7 @@ jobs:
     env:
       REVIEW_PORT: 8080
       WEBHOOK_PORT: 6969
+      TARGET_REPO: "Per0x1de-1337/Review  "  
 
     steps:
       - name: Checkout repository
@@ -81,10 +82,10 @@ jobs:
           sudo mv cloudflared /usr/local/bin/
 
       - name: Start Python HTTP Server
-        run: nohup python3 -m http.server 6000 > server.log 2>&1 &
+        run: nohup python3 -m http.server 6969 > server.log 2>&1 &
 
       - name: Start Cloudflare Tunnel
-        run: nohup cloudflared tunnel --url http://localhost:6000 > cloudflare.log 2>&1 &
+        run: nohup cloudflared tunnel --url http://localhost:6969 > cloudflare.log 2>&1 &
 
       - name: Retrieve Cloudflare Tunnel URL
         run: |
@@ -104,7 +105,7 @@ jobs:
 
       - name: Create GitHub Webhook
         env:
-          REPO: ${{ github.repository }}
+          REPO: ${{ env.TARGET_REPO }}
         run: |
           if [ -z "$CLOUDFLARE_URL" ]; then
             echo "Error: CLOUDFLARE_URL is not set!" >&2
@@ -123,8 +124,10 @@ jobs:
           }')
 
       - name: Configure GitHub webhook
+        env:
+          REPO: ${{ env.TARGET_REPO }}
         run: |
-          REPO_URL="/repos/${{ github.repository }}/hooks"
+          REPO_URL="/repos/$REPO/hooks"
           WEBHOOK_URL="$CLOUDFLARE_URL/webhook"
       
           if [ -z "$WEBHOOK_URL" ]; then
@@ -172,14 +175,17 @@ jobs:
         run: cd keploy-review-agent; go mod tidy
 
       - name: Build Review Agent
-        run: go build -o review-agent cmd/server/main.go
+        run: go build -o review-agent cmd/server/main.go 
 
       - name: Start Review Agent
         env:
-          PAT_OF_GITHUB: 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  # Using secret instead of hardcoding
+          PAT_OF_GITHUB: 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  # Using secret instead of hardcoding
         run: |
-          nohup ./review-agent --pat "$PAT_OF_GITHUB" > agent.log 2>&1 &
-          sleep 5  # Ensure the service has started
+          nohup ./review-agent  "$PAT_OF_GITHUB" > agent.log 2>&1 &
+
+      - name: sleeping or 10 sec
+        run: sleep 10
+
 
       - name: Display Agent Logs
         run: cat agent.log
