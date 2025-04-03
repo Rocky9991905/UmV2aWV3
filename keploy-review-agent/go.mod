@@ -1,6 +1,6 @@
 module github.com/keploy/keploy-review-agent
 
-go 1.24.1
+go 1.20
 
 require (
 	github.com/Masterminds/semver/v3 v3.3.1 // ind11irect
