@@ -162,10 +162,10 @@ jobs:
       - name: Debug Review Agent Logs
         run: |
           ls -la; pwd ; ps aux | grep review
-          cat agent.log
+          cat keploy-review-agent/agent.log
       - name: Check Running Processes
         run: |
-          ps aux | grep review-agent
+          ps aux | grep review
 
     
       - name: sleeping or 10 sec
