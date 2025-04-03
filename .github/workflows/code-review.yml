@@ -195,14 +195,14 @@ jobs:
       - name: Initialize Go module & Install Dependencies
         run: cd keploy-review-agent; go mod tidy
 
-      - name: Debug File Existence
-        run: |
-          echo "Current Directory: $(pwd)"
-          ls -R
-          if [ ! -f cmd/server/main.go ]; then
-            echo "Error: cmd/server/main.go not found!" >&2
-            exit 1
-          fi
+      # - name: Debug File Existence
+      #   run: |
+      #     echo "Current Directory: $(pwd)"
+      #     ls -R
+      #     if [ ! -f cmd/server/main.go ]; then
+      #       echo "Error: cmd/server/main.go not found!" >&2
+      #       exit 1
+      #     fi
       - name: Build Go Project
         run: |
           cd keploy-review-agent  # Change to the correct directory
