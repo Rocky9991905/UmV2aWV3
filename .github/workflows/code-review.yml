@@ -1,8 +1,17 @@
-name: Code Review Agent CI/CD
+# name: Code Review Agent CI/CD
+
+# on:
+#   pull_request:
+#     branches: [ main ]
+
+# jobs:
+#   review:
+#     runs-on: ubuntu-latest
+name: Triggered by External PR
 
 on:
-  pull_request:
-    branches: [ main ]
+  repository_dispatch:
+    types: [external_pr]
 
 jobs:
   review:
@@ -13,6 +22,8 @@ jobs:
       TARGET_REPO: "Per0x1de-1337/Review"  
 
     steps:
+      - name: Display PR Data
+        run: echo "Triggered by PR" ${{ github.event.client_payload.pr_url }}
       - name: Checkout repository
         uses: actions/checkout@v3
 
