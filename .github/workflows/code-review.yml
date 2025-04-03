@@ -81,13 +81,55 @@ jobs:
 
       # - name: Retrieve ngrok URL
       #   run:  cat ngrok_url.txt ; export NGROK_URL=$(cat ngrok_url.txt) ; echo "NGROK_URL=${NGROK_URL}" ; env
+
+          
+          
+      - name: Initialize Go module & Install Dependencies
+        run: cd keploy-review-agent; go mod tidy
+
+      # - name: Debug File Existence
+      #   run: |
+      #     echo "Current Directory: $(pwd)"
+      #     ls -R
+      #     if [ ! -f cmd/server/main.go ]; then
+      #       echo "Error: cmd/server/main.go not found!" >&2
+      #       exit 1
+      #     fi
+      - name: Build Go Project
+        run: |
+          cd keploy-review-agent  # Change to the correct directory
+          ls -la cmd/server/      # Confirm the file exists
+          go build -o review-agent cmd/server/main.go
+
+      # - name: Set Go Environment
+      #   run: |
+      #     export GOPATH=$GITHUB_WORKSPACE
+      #     go mod tidy  # Ensure dependencies are correct
+      #     go build -o review-agent cmd/server/main.go
+      # - name: Run Go Server
+      #   run: |
+      #     go run ./cmd/server/main.go
+
+      # - name: Build Review Agent
+      #   run: go build -o review-agent cmd/server/main.go 
+
+      - name: Start Review Agent
+        env:
+          PAT_OF_GITHUB: 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  # Using secret instead of hardcoding
+        run: |
+          nohup ./review-agent  "$PAT_OF_GITHUB" > agent.log 2>&1 &
+      - name: sleeping or 10 sec
+        run: sleep 10
+
+      - name: checkif working otr not
+        run: curl localhost:6969
       - name: Install Cloudflare Tunnel
         run: |
           curl -fsSL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
           chmod +x cloudflared
           sudo mv cloudflared /usr/local/bin/
-      - name: Start Python HTTP Server
-        run: nohup python3 -m http.server 6969 > server.log 2>&1 &
+      # - name: Start Python HTTP Server
+      #   run: nohup python3 -m http.server 6969 > server.log 2>&1 &
 
       - name: Start Cloudflare Tunnel
         run: nohup cloudflared tunnel --url http://localhost:6969 > cloudflare.log 2>&1 &
@@ -201,45 +243,6 @@ jobs:
             },
             "events": ["pull_request"]
           }')
-          
-          
-      - name: Initialize Go module & Install Dependencies
-        run: cd keploy-review-agent; go mod tidy
-
-      # - name: Debug File Existence
-      #   run: |
-      #     echo "Current Directory: $(pwd)"
-      #     ls -R
-      #     if [ ! -f cmd/server/main.go ]; then
-      #       echo "Error: cmd/server/main.go not found!" >&2
-      #       exit 1
-      #     fi
-      - name: Build Go Project
-        run: |
-          cd keploy-review-agent  # Change to the correct directory
-          ls -la cmd/server/      # Confirm the file exists
-          go build -o review-agent cmd/server/main.go
-
-      # - name: Set Go Environment
-      #   run: |
-      #     export GOPATH=$GITHUB_WORKSPACE
-      #     go mod tidy  # Ensure dependencies are correct
-      #     go build -o review-agent cmd/server/main.go
-      # - name: Run Go Server
-      #   run: |
-      #     go run ./cmd/server/main.go
-
-      # - name: Build Review Agent
-      #   run: go build -o review-agent cmd/server/main.go 
-
-      - name: Start Review Agent
-        env:
-          PAT_OF_GITHUB: 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  # Using secret instead of hardcoding
-        run: |
-          nohup ./review-agent  "$PAT_OF_GITHUB" > agent.log 2>&1 &
-      - name: sleeping or 10 sec
-        run: sleep 10
-
 
       - name: Display Agent Logs
         run: cat agent.log
