@@ -94,7 +94,7 @@ jobs:
           echo "CLOUDFLARE_URL=$(cat cloudflare_url.txt)" >> $GITHUB_ENV  # Save to environment variable
 
       - name: Output Cloudflare URL
-        run: echo "Your Cloudflare Tunnel URL is: $CLOUDFLARE_URL"
+        run: echo "Your Cloudflare Tunnel URL is:" $CLOUDFLARE_URL
 
       # - name: Authenticate GitHub CLI
       #   env:
