@@ -34,8 +34,6 @@ type Job struct {
 	RepoOwner string
 	RepoName  string
 	PRNumber  int
-	HeadSHA   string
-	BaseSHA   string
 }
 
 // Orchestrator coordinates the different analysis engines
@@ -144,7 +142,7 @@ func (o *Orchestrator) AnalyzeCode(job *Job) ([]*models.Issue, error) {
 	}
 
 	// Format and prepare comments
-	comments := o.prepareComments(AllIssues, job.HeadSHA)
+	comments := o.prepareComments(AllIssues)
 
 	// Send review comments
 	if err := o.sendReviewComment(ctx, job, comments); err != nil {
@@ -170,12 +168,13 @@ func (o *Orchestrator) AnalyzeCode(job *Job) ([]*models.Issue, error) {
 	return AllIssues, nil
 }
 func (o *Orchestrator) saveReport(report string) error {
-    filename := "code-analysis-report.md"
-    if o.cfg.ReportPath != "" {
-        filename = o.cfg.ReportPath
-    }
-    return os.WriteFile(filename, []byte(report), 0644)
+	filename := "code-analysis-report.md"
+	if o.cfg.ReportPath != "" {
+		filename = o.cfg.ReportPath
+	}
+	return os.WriteFile(filename, []byte(report), 0644)
 }
+
 // Helper method to run analyzers and handle errors
 func (o *Orchestrator) runAnalyzer(name string, analyzeFunc func() ([]*models.Issue, error), resultsCh chan<- *models.Issue) {
 	issues, err := analyzeFunc()
@@ -191,12 +190,12 @@ func (o *Orchestrator) runAnalyzer(name string, analyzeFunc func() ([]*models.Is
 }
 
 // Format issues into review comments
-func (o *Orchestrator) prepareComments(issues []*models.Issue, commitID string) []*models.ReviewComment {
+func (o *Orchestrator) prepareComments(issues []*models.Issue) []*models.ReviewComment {
 	var comments []*models.ReviewComment
 
 	for _, issue := range issues {
 		comment := formatter.FormatLinterIssue(issue)
-		comment.CommitID = commitID
+		// comment.CommitID = commitID
 		comments = append(comments, comment)
 	}
 
