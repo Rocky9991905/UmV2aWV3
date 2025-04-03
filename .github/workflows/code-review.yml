@@ -104,6 +104,7 @@ jobs:
         run: gh auth login
       - name: Set REPO Variable
         run: echo "REPO=${{ env.TARGET_REPO }}" >> $GITHUB_ENV
+
       - name: Validate Required Variables
         run: |
           if [ -z "$CLOUDFLARE_URL" ]; then
@@ -142,9 +143,6 @@ jobs:
         run: |
           echo "🚀 Creating GitHub Webhook for repository: $REPO"
           gh api --method POST /repos/$REPO/hooks --input webhook_payload.json
-
-
-
       - name: Set Environment Variables
         run: |
           echo "REPO_URL=/repos/${{ env.TARGET_REPO }}/hooks" >> $GITHUB_ENV
@@ -153,7 +151,6 @@ jobs:
         run: |
           echo "DEBUG: CLOUDFLARE_URL='${{ env.CLOUDFLARE_URL }}'"
           echo "DEBUG: WEBHOOK_URL='${{ env.WEBHOOK_URL }}'"
-
           if [ -z "${{ env.CLOUDFLARE_URL }}" ]; then
             echo "Error: CLOUDFLARE_URL is not set!" >&2
             exit 1
@@ -161,18 +158,15 @@ jobs:
       - name: Fetch Existing Webhooks
         run: |
           RESPONSE=$(gh api "${{ env.REPO_URL }}" || echo "")
-
           if ! echo "$RESPONSE" | jq -e . >/dev/null 2>&1; then
             echo "Error: Invalid JSON response from GitHub API."
             echo "Response: $RESPONSE"
             exit 1
           fi
-
           echo "GITHUB_API_RESPONSE=$RESPONSE" >> $GITHUB_ENV
       - name: Check Existing Webhook
         run: |
           HOOK_ID=$(echo '${{ env.GITHUB_API_RESPONSE }}' | jq -r --arg url "${{ env.WEBHOOK_URL }}" '.[] | select(.config.url==$url) | .id' || echo "")
-
           if [ -n "$HOOK_ID" ] && [ "$HOOK_ID" != "null" ]; then
             echo "Webhook already exists with ID: $HOOK_ID"
             echo "HOOK_ID=$HOOK_ID" >> $GITHUB_ENV
