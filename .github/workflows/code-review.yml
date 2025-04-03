@@ -89,56 +89,36 @@ jobs:
       - name: Retrieve Cloudflare Tunnel URL
         run: |
           sleep 10  # Wait for Cloudflare Tunnel to start
-          grep -oP 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' cloudflare.log | head -n 1 > cloudflare_url.txt
-          cat cloudflare_url.txt  # Display the extracted URL
-          echo "CLOUDFLARE_URL=$(cat cloudflare_url.txt)" >> $GITHUB_ENV  # Save to environment variable
+          CLOUDFLARE_URL=$(grep -oP 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' cloudflare.log | head -n 1)
+          echo "CLOUDFLARE_URL=$CLOUDFLARE_URL" >> $GITHUB_ENV
 
       - name: Output Cloudflare URL
-        run: echo "Your Cloudflare Tunnel URL is:" $CLOUDFLARE_URL
+        run: echo "Your Cloudflare Tunnel URL is: $CLOUDFLARE_URL"
 
-      # - name: Authenticate GitHub CLI
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: gh auth status || gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
-
-
-      # - name: Debug GH_TOKEN
-      #   env:
-      #     GH_TOKEN: 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
-      #   run: |
-      #     if [ -z "$GH_TOKEN" ]; then
-      #       echo "GH_TOKEN is not set!"
-      #       exit 1
-      #     else
-      #       echo "GH_TOKEN is set correctly."
-          # fi
-
-      - name: login now
-        run: gh auth login -p https -h github.com
-        
-      # - name: mannual test
-      #   run: |
-      #       gh api /repos/Rocky9991905/UmV2aWV3/hooks --method POST \
-      #         -f name='web' \
-      #         -f config='{"url": "'"${NGROK_URL}/webhook"'", "content_type": "json"}' \
-      #         -F events='["pull_request"]'
-
-
-
-      - name: manual test
+      - name: Authenticate GitHub CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh api /repos/Rocky9991905/UmV2aWV3/hooks --method POST --input <(jq -n \
-          --arg url "$NGROK_URL/webhook$RANDOM" \
-          '{
-              "name": "web",
-              "active": true,
-              "events": ["pull_request"],
-              "config": {
-                  "url": $url,
-                  "content_type": "json",
-                  "insecure_ssl": "0"
-              }
+          if ! gh auth status; then
+            echo "Authentication failed. Exiting."
+            exit 1
+          fi
+
+      - name: Create GitHub Webhook
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          gh api --method POST /repos/$REPO/hooks --input <(jq -n --arg url "$CLOUDFLARE_URL/webhook" '{
+            "name": "web",
+            "active": true,
+            "events": ["pull_request"],
+            "config": {
+              "url": $url,
+              "content_type": "json",
+              "insecure_ssl": "0"
+            }
           }')
+
 
               
 
