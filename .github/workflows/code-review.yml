@@ -111,8 +111,11 @@ jobs:
             echo "Error: CLOUDFLARE_URL is not set!" >&2
             exit 1
           fi
-
-          gh api --method POST /repos/$REPO/hooks --input <(jq -n --arg url "$CLOUDFLARE_URL/webhook" '{
+          if [ -z "$REPO" ]; then
+            echo "Error: REPO is not set!" >&2
+            exit 1
+          fi
+          gh api --method POST /repos/$REPO/hooks --raw-field "$(jq -n --arg url "${CLOUDFLARE_URL}/webhook" '{
             "name": "web",
             "active": true,
             "events": ["pull_request"],
@@ -121,7 +124,8 @@ jobs:
               "content_type": "json",
               "insecure_ssl": "0"
             }
-          }')
+          }')"
+
 
       - name: Set Environment Variables
         run: |
