@@ -95,7 +95,7 @@ jobs:
           # fi
 
       - name: login now
-        run: echo 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 | gh auth login --with-token
+        run: echo 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 | gh auth login --with-token
         
       # - name: mannual test
       #   run: |
