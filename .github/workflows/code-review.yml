@@ -169,10 +169,10 @@ jobs:
 
 
       - name: Initialize Go module & Install Dependencies
-        run: go mod tidy
+        run: cd keploy-review-agent; go mod tidy
 
       - name: Build Review Agent
-        run: go build -o review-agent .
+        run: go build -o review-agent cmd/server/main.go
 
       - name: Start Review Agent
         env:
