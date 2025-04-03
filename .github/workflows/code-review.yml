@@ -103,7 +103,6 @@ jobs:
       - name: Output Cloudflare URL
         run: echo "Your Cloudflare Tunnel URL is" $CLOUDFLARE_URL
   
-
       # - name: Authenticate GitHub CLI
       #   env:
       #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
