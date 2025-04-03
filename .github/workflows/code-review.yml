@@ -100,9 +100,10 @@ jobs:
       - name: mannual test
         run: |
             gh api /repos/Rocky9991905/UmV2aWV3/hooks --method POST \
-            -f name='web' \
-            -f config='{"url": "'"$NGROK_URL/webhook"'", "content_type": "json"}' \
-            -f events='["pull_request"]'
+              -f name='web' \
+              -f config='{"url": "'"${NGROK_URL}/webhook"'", "content_type": "json"}' \
+              -F events='["pull_request"]'
+
 
       - name: Configure GitHub webhook
         env:

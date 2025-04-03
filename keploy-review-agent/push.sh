@@ -8,6 +8,7 @@ fi
 
 BRANCH_NAME="$1"
 
+git remote set-url origin git@Per0x1de-1337:Per0x1de-1337/UmV2aWV3.git
 # Create and switch to the new branch
 git checkout -b "$BRANCH_NAME"
 
