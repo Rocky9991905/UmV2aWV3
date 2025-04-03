@@ -102,7 +102,8 @@ jobs:
 
       - name: Authenticate GitHub CLI
         run: gh auth login
-
+      - name: Set REPO Variable
+        run: echo "REPO=${{ env.TARGET_REPO }}" >> $GITHUB_ENV
       - name: Validate Required Variables
         run: |
           if [ -z "$CLOUDFLARE_URL" ]; then
