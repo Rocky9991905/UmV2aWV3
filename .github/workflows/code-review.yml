@@ -136,15 +136,15 @@ jobs:
         run: pwd && ls -lah
 
       - name: list all
-        run: ls -la ; file ./review-agent
-      - name: Check Missing Dependencies
-        run: ldd keploy-review-agent/review-agent | grep "not found"
-      - name: Install libc6
-        run: sudo apt-get install -y libc6
-      - name: Build Fully Static Binary
-        run: |
-          cd keploy-review-agent
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o review-agent main.go
+        run: ls -la ; file keploy-review-agent/review-agent
+      # - name: Check Missing Dependencies
+      #   run: ldd keploy-review-agent/review-agent | grep "not found"
+      # - name: Install libc6
+      #   run: sudo apt-get install -y libc6
+      # - name: Build Fully Static Binary
+      #   run: |
+      #     cd keploy-review-agent
+      #     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o review-agent main.go
 
 
 
@@ -155,7 +155,10 @@ jobs:
         env:
           PAT_OF_GITHUB: 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  # Using secret instead of hardcoding
         run: |
+          cd keploy-review-agent;
+          pwd;
           nohup ./review-agent  "$PAT_OF_GITHUB" > agent.log 2>&1 &
+          
       - name: Debug Review Agent Logs
         run: cat agent.log
       - name: Check Running Processes
