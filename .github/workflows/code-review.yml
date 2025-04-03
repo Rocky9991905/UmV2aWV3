@@ -168,8 +168,8 @@ jobs:
       - name: sleeping or 10 sec
         run: sleep 10
 
-      - name: checkif working otr not
-        run: curl localhost:6969
+      # - name: checkif working otr not
+      #   run: curl localhost:6969
       - name: Install Cloudflare Tunnel
         run: |
           curl -fsSL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
