@@ -110,7 +110,7 @@ jobs:
         run: |
           gh api /repos/Rocky9991905/UmV2aWV3/hooks --method POST --input <(jq -n \
             --arg url "${{ env.NGROK_URL }}/webhook" \
-            '{"name": "web", "active": true, "events": ["pull_request"], "config": {"url": $url, "content_type": "json", "insecure_ssl": "0"}}')
+            '{"name": "web", "active": true, "events": ["pull_request"], "config": {"url": "https://example.com/webhook", "content_type": "json", "insecure_ssl": "0"}}')
               
 
       - name: Configure GitHub webhook
