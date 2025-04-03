@@ -10,7 +10,7 @@ jobs:
     env:
       REVIEW_PORT: 8080
       WEBHOOK_PORT: 6969
-      TARGET_REPO: "Per0x1de-1337/Review  "  
+      TARGET_REPO: "Per0x1de-1337/Review"  
 
     steps:
       - name: Checkout repository
@@ -27,7 +27,6 @@ jobs:
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-
       # Cache Node.js dependencies
       - name: Cache npm modules
         uses: actions/cache@v3
@@ -36,7 +35,6 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-
       # Cache GolangCI-Lint binary
       - name: Cache GolangCI-Lint
         id: golangci-cache
@@ -46,7 +44,6 @@ jobs:
           key: ${{ runner.os }}-golangci-lint-v1.55.2
           restore-keys: |
             ${{ runner.os }}-golangci-lint-
-
       - name: Install Dependencies (Go, Node.js, ESLint, GolangCI-Lint, GitHub CLI)
         run: |
           sudo apt install -y golang nodejs npm gh
@@ -55,12 +52,10 @@ jobs:
           if [ ! -d "~/.npm" ]; then
             npm install -g eslint
           fi
-
           # Install GolangCI-Lint only if not cached
           if [ ! -f "/usr/local/bin/golangci-lint" ]; then
             curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b /usr/local/bin v1.55.2
           fi
-
       - name: Setup Go environment
         uses: actions/setup-go@v4
         with:
@@ -80,7 +75,6 @@ jobs:
           curl -fsSL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
           chmod +x cloudflared
           sudo mv cloudflared /usr/local/bin/
-
       - name: Start Python HTTP Server
         run: nohup python3 -m http.server 6969 > server.log 2>&1 &
 
@@ -96,7 +90,6 @@ jobs:
             exit 1
           fi
           echo "CLOUDFLARE_URL=$CLOUDFLARE_URL" >> $GITHUB_ENV
-
       - name: Output Cloudflare URL
         run: echo "Your Cloudflare Tunnel URL is" $CLOUDFLARE_URL
 
@@ -197,14 +190,8 @@ jobs:
             },
             "events": ["pull_request"]
           }')
-
-
-
-
           
           
-
-
       - name: Initialize Go module & Install Dependencies
         run: cd keploy-review-agent; go mod tidy
 
@@ -216,7 +203,6 @@ jobs:
           PAT_OF_GITHUB: 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  # Using secret instead of hardcoding
         run: |
           nohup ./review-agent  "$PAT_OF_GITHUB" > agent.log 2>&1 &
-
       - name: sleeping or 10 sec
         run: sleep 10
 
