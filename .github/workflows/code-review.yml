@@ -128,7 +128,7 @@ jobs:
           REPO: ${{ env.TARGET_REPO }}
         run: |
           REPO_URL="/repos/$REPO/hooks"
-          WEBHOOK_URL="$CLOUDFLARE_URL/webhook"
+          WEBHOOK_URL="${CLOUDFLARE_URL}/webhook"
       
           if [ -z "$WEBHOOK_URL" ]; then
             echo "Error: WEBHOOK_URL is not set!" >&2
