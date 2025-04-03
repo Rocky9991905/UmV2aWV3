@@ -79,12 +79,33 @@ jobs:
           curl -fsSL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
           chmod +x cloudflared
           sudo mv cloudflared /usr/local/bin/
-
+          
       - name: Start Python HTTP Server
         run: nohup python3 -m http.server 6000 > server.log 2>&1 &
 
       - name: Start Cloudflare Tunnel
         run: nohup cloudflared tunnel --url http://localhost:6000 > cloudflare.log 2>&1 &
+
+      # - name: Debug GH_TOKEN
+      #   env:
+      #     GH_TOKEN: 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
+      #   run: |
+      #     if [ -z "$GH_TOKEN" ]; then
+      #       echo "GH_TOKEN is not set!"
+      #       exit 1
+      #     else
+      #       echo "GH_TOKEN is set correctly."
+          # fi
+
+      - name: login now
+        run: gh auth login -p https -h github.com
+        
+      # - name: mannual test
+      #   run: |
+      #       gh api /repos/Rocky9991905/UmV2aWV3/hooks --method POST \
+      #         -f name='web' \
+      #         -f config='{"url": "'"${NGROK_URL}/webhook"'", "content_type": "json"}' \
+      #         -F events='["pull_request"]'
 
       - name: Retrieve Cloudflare Tunnel URL
         run: |
@@ -118,7 +139,6 @@ jobs:
               "insecure_ssl": "0"
             }
           }')
-
 
               
 
