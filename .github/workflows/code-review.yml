@@ -195,6 +195,28 @@ jobs:
       - name: Initialize Go module & Install Dependencies
         run: cd keploy-review-agent; go mod tidy
 
+      - name: Debug File Existence
+        run: |
+          echo "Current Directory: $(pwd)"
+          ls -R
+          if [ ! -f cmd/server/main.go ]; then
+            echo "Error: cmd/server/main.go not found!" >&2
+            exit 1
+          fi
+      - name: Build Go Project
+        run: |
+          cd $GITHUB_WORKSPACE  # Ensure we're in the right directory
+          ls -la cmd/server/    # Check if the file exists
+          go build -o review-agent cmd/server/main.go
+      - name: Set Go Environment
+        run: |
+          export GOPATH=$GITHUB_WORKSPACE
+          go mod tidy  # Ensure dependencies are correct
+          go build -o review-agent cmd/server/main.go
+      - name: Run Go Server
+        run: |
+          go run ./cmd/server/main.go
+
       - name: Build Review Agent
         run: go build -o review-agent cmd/server/main.go 
 
