@@ -103,19 +103,24 @@ jobs:
       - name: Authenticate GitHub CLI
         run: gh auth login
 
-      - name: Create GitHub Webhook
-        env:
-          REPO: ${{ env.TARGET_REPO }}
+      - name: Validate Required Variables
         run: |
           if [ -z "$CLOUDFLARE_URL" ]; then
-            echo "Error: CLOUDFLARE_URL is not set!" >&2
+            echo "❌ Error: CLOUDFLARE_URL is not set!" >&2
             exit 1
+          else
+            echo "✅ CLOUDFLARE_URL is set: $CLOUDFLARE_URL"
           fi
+      
           if [ -z "$REPO" ]; then
-            echo "Error: REPO is not set!" >&2
+            echo "❌ Error: REPO is not set!" >&2
             exit 1
+          else
+            echo "✅ REPO is set: $REPO"
           fi
-          gh api --method POST /repos/$REPO/hooks --raw-field "$(jq -n --arg url "${CLOUDFLARE_URL}/webhook" '{
+      - name: Generate Webhook JSON Config
+        run: |
+          jq -n --arg url "${CLOUDFLARE_URL}/webhook" '{
             "name": "web",
             "active": true,
             "events": ["pull_request"],
@@ -124,7 +129,19 @@ jobs:
               "content_type": "json",
               "insecure_ssl": "0"
             }
-          }')"
+          }' > webhook_payload.json
+      
+          echo "🔍 Generated Webhook JSON:"
+          cat webhook_payload.json
+      - name: Debug GitHub Authentication
+        run: |
+          echo "🔍 Checking GitHub authentication..."
+          gh auth status || { echo "❌ GitHub CLI is not authenticated!"; exit 1; }
+      - name: Create GitHub Webhook
+        run: |
+          echo "🚀 Creating GitHub Webhook for repository: $REPO"
+          gh api --method POST /repos/$REPO/hooks --input webhook_payload.json
+
 
 
       - name: Set Environment Variables
