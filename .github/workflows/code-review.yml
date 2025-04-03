@@ -160,7 +160,9 @@ jobs:
           nohup ./review-agent  "$PAT_OF_GITHUB" > agent.log 2>&1 &
           
       - name: Debug Review Agent Logs
-        run: cat agent.log
+        run: |
+          ls -la; pwd ; ps aux | grep review
+          cat agent.log
       - name: Check Running Processes
         run: |
           ps aux | grep review-agent
