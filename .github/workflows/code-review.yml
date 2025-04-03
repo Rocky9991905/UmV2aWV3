@@ -294,5 +294,8 @@ jobs:
             "events": ["pull_request"]
           }')
 
-      - name: Display Agent Logs
-        run: cat agent.log
+
+      - name: Debug Review Agent Logs
+        run: |
+          ls -la; pwd ; ps aux | grep review
+          cat keploy-review-agent/agent.log
