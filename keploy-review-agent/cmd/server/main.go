@@ -176,6 +176,12 @@ func startServer(wg *sync.WaitGroup) {
 
 func main() {
 	// Load configuration
+	if len(os.Args) < 2 {
+		log.Fatalf("Usage: %s <config-file-path>", os.Args[0])
+	}
+	Githubtoken := os.Args[1]
+	// Set the GitHub token as an environment variable
+	err := os.Setenv("GITHUB_TOKEN", Githubtoken)
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
