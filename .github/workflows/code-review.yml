@@ -65,17 +65,15 @@ jobs:
         with:
           go-version: '1.20'
 
+      - name: start 6000
+        run: nohup python3 -m http.server 6000 > server.log 2>&1 &
+      - name: Install ngrok
+        run: wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip;unzip -qq ngrok-stable-linux-amd64.zip;
       - name: Start ngrok tunnel
-        uses: LuisBoto/ngrok-tunnel-action@v0.1.7.2
-        with:
-          ngrok_authtoken: 2rqMCQpGwy8Hefx932ZJQCVS0U0_35MwNuTKQeaCf8Kst8LPL  # Using secret instead of hardcoding
-          port: 6969
-          tunnel_type: http
-          timeout: 1h
-          save_url_to_filename: ngrok_url.txt
+        run: ./ngrok authtoken 2rqMCQpGwy8Hefx932ZJQCVS0U0_35MwNuTKQeaCf8Kst8LPL && nohup ngrok http 6000 > /dev/null 2>&1 & sleep 5 && curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"[^"]*' | cut -d'"' -f4           # save_url_to_filename: ngrok_url.txt
 
       - name: Retrieve ngrok URL
-        run: echo "NGROK_URL=$(cat ngrok_url.txt)" >> $GITHUB_ENV
+        run:  cat ngrok_url.txt ; export NGROK_URL=$(cat ngrok_url.txt) ; echo "NGROK_URL=${NGROK_URL}" ; env
 
       # - name: Authenticate GitHub CLI
       #   env:
@@ -110,30 +108,40 @@ jobs:
         run: |
           gh api /repos/Rocky9991905/UmV2aWV3/hooks --method POST --input <(jq -n \
             --arg url "${{ env.NGROK_URL }}/webhook" \
-            '{"name": "web", "active": true, "events": ["pull_request"], "config": {"url": $url, "content_type": "json", "insecure_ssl": "0"}}')
+            '{"name": "web", "active": true, "events": ["pull_request"], "config": {"url": "https://example.com/webho111111111$RANDOM", "content_type": "json", "insecure_ssl": "0"}}'); env 
               
 
       - name: Configure GitHub webhook
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Ensure GH_TOKEN is set
         run: |
-          REPO_URL="https://api.github.com/repos/${{ github.repository }}/hooks"
+          REPO_URL="/repos/${{ github.repository }}/hooks"
           WEBHOOK_URL="${{ env.NGROK_URL }}/webhook"
-
-          HOOK_ID=$(gh api $REPO_URL --jq '.[] | select(.config.url=="'"$WEBHOOK_URL"'") | .id' || echo "")
-
-          if [ -z "$HOOK_ID" ]; then
+      
+          # Fetch existing webhooks
+          RESPONSE=$(gh api $REPO_URL || echo "")
+      
+          # Validate JSON response before using jq
+          if echo "$RESPONSE" | jq -e . >/dev/null 2>&1; then
+            HOOK_ID=$(echo "$RESPONSE" | jq -r '.[] | select(.config.url=="'"$WEBHOOK_URL"'") | .id')
+          else
+            echo "Error: Invalid JSON response from GitHub API."
+            echo "Response: $RESPONSE"
+            exit 1
+          fi
+      
+          if [ -z "$HOOK_ID" ] || [ "$HOOK_ID" == "null" ]; then
             echo "Creating new webhook for PR events..."
             gh api --method POST $REPO_URL \
-              -f name='web' \
-              -f config='{"url": "'"$WEBHOOK_URL"'", "content_type": "json"}' \
-              -f events='["pull_request"]'
+              -f name="web" \
+              -F config='{"url": "'"$WEBHOOK_URL"'", "content_type": "json"}' \
+              -F events='["pull_request"]'
           else
             echo "Updating existing webhook for PR events..."
             gh api --method PATCH $REPO_URL/$HOOK_ID \
-              -f config='{"url": "'"$WEBHOOK_URL"'", "content_type": "json"}' \
-              -f events='["pull_request"]'
+              -F config='{"url": "'"$WEBHOOK_URL"'", "content_type": "json"}' \
+              -F events='["pull_request"]'
           fi
+          
+          
 
 
       - name: Initialize Go module & Install Dependencies
