@@ -75,7 +75,7 @@ jobs:
           save_url_to_filename: ngrok_url.txt
 
       - name: Retrieve ngrok URL
-        run:  cat ngrok_url.txt; cat ngrok_url.txt >> $NGROK_URL
+        run:  cat ngrok_url.txt ; file ngrok_url.txt ; strings ngrok_url.txt 
 
       # - name: Authenticate GitHub CLI
       #   env:
