@@ -15,26 +15,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # - name: Update system packages
-      #   run: sudo apt update
+      - name: Update system packages
+        run: sudo apt update
 
       # Cache Go modules to avoid downloading dependencies repeatedly
-      # - name: Cache Go Modules
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: ~/go/pkg/mod
-      #     key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-go-
+      - name: Cache Go Modules
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
       # Cache Node.js dependencies
-      # - name: Cache npm modules
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: ~/.npm
-      #     key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-node-
+      - name: Cache npm modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       # Cache GolangCI-Lint binary
       # - name: Cache GolangCI-Lint
@@ -46,19 +46,19 @@ jobs:
       #     restore-keys: |
       #       ${{ runner.os }}-golangci-lint-
 
-      # - name: Install Dependencies (Go, Node.js, ESLint, GolangCI-Lint, GitHub CLI)
-      #   run: |
-      #     sudo apt install -y golang nodejs npm gh
-          
+      - name: Install Dependencies (Go, Node.js, ESLint, GolangCI-Lint, GitHub CLI)
+        run: |
+          sudo apt install -y golang nodejs npm gh
+          if [ ! -d "~/.npm" ]; then
+            npm install -g eslint
+          fi
+          if [ ! -f "/usr/local/bin/golangci-lint" ]; then
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b /usr/local/bin v1.55.2
+          fi
       #     # Install npm dependencies only if not cached
-      #     if [ ! -d "~/.npm" ]; then
-      #       npm install -g eslint
-      #     fi
 
       #     # Install GolangCI-Lint only if not cached
-      #     if [ ! -f "/usr/local/bin/golangci-lint" ]; then
-      #       curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b /usr/local/bin v1.55.2
-      #     fi
+
 
       - name: Setup Go environment
         uses: actions/setup-go@v4
@@ -94,7 +94,7 @@ jobs:
           echo "CLOUDFLARE_URL=$(cat cloudflare_url.txt)" >> $GITHUB_ENV  # Save to environment variable
 
       - name: Output Cloudflare URL
-        run: echo "Your Cloudflare Tunnel URL is: $CLOUDFLARE_URL"
+        run: echo "Your Cloudflare Tunnel URL is" $CLOUDFLARE_URL
 
       # - name: Authenticate GitHub CLI
       #   env:
