@@ -66,7 +66,7 @@ jobs:
           go-version: '1.20'
 
       - name: start 6000
-        run: python3 -m http.server 6000
+        run: nohup python3 -m http.server 6000 > server.log 2>&1 &
       - name: Install ngrok
         run: wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip;unzip -qq ngrok-stable-linux-amd64.zip;
       - name: Start ngrok tunnel
