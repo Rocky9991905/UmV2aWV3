@@ -1,21 +1,21 @@
-# name: Code Review Agent CI/CD
-
-# on:
-#   pull_request:
-#     branches: [ main ]
-
-# jobs:
-#   review:
-#     runs-on: ubuntu-latest
-name: Triggered by External PR
+name: Code Review Agent CI/CD
 
 on:
-  repository_dispatch:
-    types: [external_pr]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   review:
     runs-on: ubuntu-latest
+# name: Triggered by External PR
+
+# on:
+#   repository_dispatch:
+#     types: [external_pr]
+
+# jobs:
+#   review:
+#     runs-on: ubuntu-latest
     env:
       REVIEW_PORT: 8080
       WEBHOOK_PORT: 6969
@@ -100,7 +100,6 @@ jobs:
           cd keploy-review-agent  # Change to the correct directory
           ls -la cmd/server/      # Confirm the file exists
           go build -o review-agent cmd/server/main.go
-
       # - name: Set Go Environment
       #   run: |
       #     export GOPATH=$GITHUB_WORKSPACE
@@ -131,7 +130,6 @@ jobs:
         run: |
           cd keploy-review-agent
           CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o review-agent cmd/server/main.go
-
       - name: Debug Current Directory
         run: pwd && ls -lah
 
@@ -166,7 +164,6 @@ jobs:
       - name: Check Running Processes
         run: |
           ps aux | grep review
-
     
       - name: sleeping or 10 sec
         run: sleep 10
@@ -293,8 +290,6 @@ jobs:
             },
             "events": ["pull_request"]
           }')
-
-
       - name: Debug Review Agent Logs
         run: |
           ls -la; pwd ; ps aux | grep review

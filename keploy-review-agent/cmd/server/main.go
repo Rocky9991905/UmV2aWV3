@@ -3,22 +3,21 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
-	"regexp"
+	"strconv"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
 
-	"github.com/keploy/keploy-review-agent/internal/analyzer"
 	"github.com/keploy/keploy-review-agent/internal/api"
 	"github.com/keploy/keploy-review-agent/internal/config"
-	"github.com/keploy/keploy-review-agent/pkg/github"
 )
 
 type PullRequest struct {
@@ -41,147 +40,135 @@ type Repository struct {
 }
 
 type Payload struct {
-	Action     string      `json:"action"`
+	Action      string      `json:"action"`
 	PullRequest PullRequest `json:"pull_request"`
-	Repository Repository  `json:"repository"`
+	Repository  Repository  `json:"repository"`
 }
 
-// Extract owner and repo from GitHub pull request URL
-func extractOwnerAndRepo(url string) (owner, repo string, err error) {
-	// Regular expression to match the URL and capture owner and repo
-	re := regexp.MustCompile(`https://api.github.com/repos/([^/]+)/([^/]+)/pulls/(\d+)`)
-	matches := re.FindStringSubmatch(url)
-
-	// If no matches, return an error
-	if len(matches) < 3 {
-		return "", "", fmt.Errorf("could not extract owner and repo from the URL")
+func extractPullNumber(PullRequest_url string) string {
+	if PullRequest_url == "" {
+		return ""
 	}
 
-	// Return the owner and repo
-	return matches[1], matches[2], nil
+	parts := strings.Split(PullRequest_url, "/")
+	if len(parts) < 2 {
+		return ""
+	}
+
+	// The pull number is typically the last part of the URL
+	return parts[len(parts)-1]
+}
+
+func extractOwnerAndRepo(PullRequest_url string) (string, string, error) {
+	if PullRequest_url == "" {
+		return "", "", errors.New("PullRequest_url is empty")
+	}
+
+	parts := strings.Split(PullRequest_url, "/")
+	if len(parts) < 5 {
+		return "", "", errors.New("invalid PullRequest_url format")
+	}
+
+	owner := parts[len(parts)-4]
+	repo := parts[len(parts)-3]
+	return owner, repo, nil
 }
 
 // Start HTTP server for handling GitHub events
 func startServer(wg *sync.WaitGroup) {
 	defer wg.Done()
-
+	fmt.Printf("Starting server on port 6969 holalal\n")
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Welcome")
 	})
 
-	http.HandleFunc("/github", func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("X-Github-Event") == "pull_request" {
-			// Read the request body
-			body, err := ioutil.ReadAll(r.Body)
-			if err != nil {
-				http.Error(w, "Unable to read request body", http.StatusBadRequest)
-				return
-			}
+	// http.HandleFunc("/github", func(w http.ResponseWriter, r *http.Request) {
+	url := os.Getenv("PULL_REQUEST_URL")
+	owner, repo, err := extractOwnerAndRepo(url)
+	pullnumber := extractPullNumber(url)
+	prNumber, err := strconv.Atoi(pullnumber)
+	if err != nil {
+		log.Panicf("failed to convert pull number to integer: %v", err)
+	}
+	fmt.Printf("Owner: %s, Repo: %s\n", owner, repo)
+	if err != nil {
+		log.Panic("Error extracting owner and repo:", err)
+		return
+	}
 
-			// Parse JSON into a map
-			var data map[string]interface{}
-			err = json.Unmarshal(body, &data)
-			if err != nil {
-				http.Error(w, "Unable to parse JSON", http.StatusInternalServerError)
-				return
-			}
+	// Prepare payload for sending to localhost
+	body := Payload{
+		Action: "opened",
+		PullRequest: PullRequest{
+			Number: prNumber,
+			Head: struct {
+				Sha string `json:"sha"`
+			}{
+				Sha: "abc123",
+			},
+			Base: struct {
+				Sha string `json:"sha"`
+			}{
+				Sha: "def456",
+			},
+		},
+		Repository: Repository{
+			Name: repo,
+			Owner: Owner{
+				Login: owner,
+			},
+		},
+	}
 
-			// Extract pull request action
-			if action, ok := data["action"].(string); ok {
-				if action == "opened" {
-					// Get pull request number
-					pullnumber := data["number"].(float64)
-					fmt.Println(pullnumber)
+	// Marshal body to JSON
+	jsonBody, err := json.Marshal(body)
+	if err != nil {
+		log.Panic("Error marshalling JSON:", err)
+		return
+	}
+	fmt.Println(string(jsonBody))
 
-					// Extract URL and owner/repo from the pull request data
-					url := data["pull_request"].(map[string]interface{})["url"].(string)
-					owner, repo, err := extractOwnerAndRepo(url)
-					fmt.Printf("Owner: %s, Repo: %s\n", owner, repo)
-					if err != nil {
-						http.Error(w, "Failed to extract owner/repo", http.StatusInternalServerError)
-						return
-					}
+	// Send POST request to localhost (via curl)
+	go func() {
+		// Run the curl command asynchronously to avoid blocking
+		curlCmd := exec.Command("curl", "-X", "POST",
+			"-H", "Content-Type: application/json",
+			"-H", "X-GitHub-Event: pull_request",
+			"-H", "X-Hub-Signature-256: sha256=dummy",
+			"-d", string(jsonBody),
+			"http://localhost:8080/webhook/github")
 
-					// Prepare payload for sending to localhost
-					body := Payload{
-						Action: "opened",
-						PullRequest: PullRequest{
-							Number: int(pullnumber),
-							Head: struct {
-								Sha string `json:"sha"`
-							}{
-								Sha: "abc123",
-							},
-							Base: struct {
-								Sha string `json:"sha"`
-							}{
-								Sha: "def456",
-							},
-						},
-						Repository: Repository{
-							Name: repo,
-							Owner: Owner{
-								Login: owner,
-							},
-						},
-					}
-
-					// Marshal body to JSON
-					jsonBody, err := json.Marshal(body)
-					if err != nil {
-						http.Error(w, "Failed to marshal body", http.StatusInternalServerError)
-						return
-					}
-					fmt.Println(string(jsonBody))
-
-					// Send POST request to localhost (via curl)
-					go func() {
-						// Run the curl command asynchronously to avoid blocking
-						curlCmd := exec.Command("curl", "-X", "POST", 
-							"-H", "Content-Type: application/json", 
-							"-H", "X-GitHub-Event: pull_request", 
-							"-H", "X-Hub-Signature-256: sha256=dummy", 
-							"-d", string(jsonBody), 
-							"http://localhost:8080/webhook/github")
-
-						// Run the curl command
-						output, err := curlCmd.CombinedOutput()
-						fmt.Printf("Output: %s\n", output)
-						if err != nil {
-							fmt.Println("Error running curl command:", err)
-							return
-						}
-					}()
-				}
-			}
-
-			// Handle pull request number
-			if pullnumber, ok := data["number"].(float64); ok {
-				analyzer.PullRequestNumber(int(pullnumber))
-				github.PullRequestNumber(int(pullnumber))
-				fmt.Println(pullnumber)
-			}
+		// Run the curl command
+		output, err := curlCmd.CombinedOutput()
+		fmt.Printf("Output: %s\n", output)
+		if err != nil {
+			fmt.Println("Error running curl command:", err)
+			return
 		}
+	}()
 
-		w.Write([]byte("success"))
-	})
+	// w.Write([]byte("success"))
+	// })
 
 	// Start the server
-	log.Printf("Server is running on port 6969")
-	err := http.ListenAndServe(":6969", nil)
-	if err != nil {
-		log.Fatalln("Error starting server: ", err)
-	}
+	// log.Printf("Server is running on port 6969")
+	// err := http.ListenAndServe(":6969", nil)
+	// if err != nil {
+	// 	log.Fatalln("Error starting server: ", err)
+	// }
 }
 
 func main() {
 	// Load configuration
-	if len(os.Args) < 2 {
+	if len(os.Args) < 3 {
 		log.Fatalf("Usage: %s <config-file-path>", os.Args[0])
 	}
 	Githubtoken := os.Args[1]
 	// Set the GitHub token as an environment variable
 	err := os.Setenv("GITHUB_TOKEN", Githubtoken)
+	PullRequest_URL := os.Args[2]
+	// Set the pull request URL as an environment variable
+	err = os.Setenv("PULL_REQUEST_URL", PullRequest_URL)
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)

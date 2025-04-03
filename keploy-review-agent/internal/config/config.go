@@ -91,7 +91,7 @@ func Load() (*Config, error) {
 	if port := os.Getenv("SERVER_PORT"); port != "" {
 		config.ServerPort = port
 	}
-
+	
 	if token1 := os.Getenv("GITHUB_TOKEN"); token1 != "" {
 		config.GitHubToken = token1
 	}
