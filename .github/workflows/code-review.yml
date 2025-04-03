@@ -176,7 +176,7 @@ jobs:
           PAT_OF_GITHUB: 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  # Using secret instead of hardcoding
         run: |
           nohup ./review-agent --pat "$PAT_OF_GITHUB" > agent.log 2>&1 &
-          sleep 5  # Ensure the service has started
+          sleep 5  # Ensures the service has started
 
       - name: Display Agent Logs
         run: cat agent.log
