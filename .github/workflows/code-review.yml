@@ -10,7 +10,7 @@ jobs:
     env:
       REVIEW_PORT: 8080
       WEBHOOK_PORT: 6969
-      TARGET_REPO: "Per0x1de-1337/Review  "  
+      TARGET_REPO: "Per0x1de-1337/Review"  
 
     steps:
       - name: Checkout repository
@@ -102,6 +102,8 @@ jobs:
 
       - name: Authenticate GitHub CLI
         run: gh auth login
+      - name: Set REPO Variable
+        run: echo "REPO=${{ env.TARGET_REPO }}" >> $GITHUB_ENV
 
       - name: Validate Required Variables
         run: |
