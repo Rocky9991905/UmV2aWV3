@@ -90,6 +90,10 @@ jobs:
         run: |
           sleep 10  # Wait for Cloudflare Tunnel to start
           CLOUDFLARE_URL=$(grep -oP 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' cloudflare.log | head -n 1)
+          if [ -z "$CLOUDFLARE_URL" ]; then
+            echo "Error: Cloudflare Tunnel URL not found!" >&2
+            exit 1
+          fi
           echo "CLOUDFLARE_URL=$CLOUDFLARE_URL" >> $GITHUB_ENV
 
       - name: Output Cloudflare URL
@@ -102,6 +106,11 @@ jobs:
         env:
           REPO: ${{ github.repository }}
         run: |
+          if [ -z "$CLOUDFLARE_URL" ]; then
+            echo "Error: CLOUDFLARE_URL is not set!" >&2
+            exit 1
+          fi
+
           gh api --method POST /repos/$REPO/hooks --input <(jq -n --arg url "$CLOUDFLARE_URL/webhook" '{
             "name": "web",
             "active": true,
@@ -113,18 +122,18 @@ jobs:
             }
           }')
 
-
-              
-
       - name: Configure GitHub webhook
         run: |
           REPO_URL="/repos/${{ github.repository }}/hooks"
-          WEBHOOK_URL="${{ env.NGROK_URL }}/webhook"
+          WEBHOOK_URL="$CLOUDFLARE_URL/webhook"
       
-          # Fetch existing webhooks
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "Error: WEBHOOK_URL is not set!" >&2
+            exit 1
+          fi
+      
           RESPONSE=$(gh api $REPO_URL || echo "")
       
-          # Validate JSON response before using jq
           if echo "$RESPONSE" | jq -e . >/dev/null 2>&1; then
             HOOK_ID=$(echo "$RESPONSE" | jq -r '.[] | select(.config.url=="'"$WEBHOOK_URL"'") | .id')
           else
@@ -135,16 +144,26 @@ jobs:
       
           if [ -z "$HOOK_ID" ] || [ "$HOOK_ID" == "null" ]; then
             echo "Creating new webhook for PR events..."
-            gh api --method POST $REPO_URL \
-              -f name="web" \
-              -F config='{"url": "'"$WEBHOOK_URL"'", "content_type": "json"}' \
-              -F events='["pull_request"]'
+            gh api --method POST $REPO_URL --input <(jq -n --arg url "$WEBHOOK_URL" '{
+              "name": "web",
+              "active": true,
+              "events": ["pull_request"],
+              "config": {
+                "url": $url,
+                "content_type": "json"
+              }
+            }')
           else
             echo "Updating existing webhook for PR events..."
-            gh api --method PATCH $REPO_URL/$HOOK_ID \
-              -F config='{"url": "'"$WEBHOOK_URL"'", "content_type": "json"}' \
-              -F events='["pull_request"]'
+            gh api --method PATCH $REPO_URL/$HOOK_ID --input <(jq -n --arg url "$WEBHOOK_URL" '{
+              "config": {
+                "url": $url,
+                "content_type": "json"
+              },
+              "events": ["pull_request"]
+            }')
           fi
+
           
           
 
