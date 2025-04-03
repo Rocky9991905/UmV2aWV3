@@ -70,7 +70,7 @@ jobs:
       - name: Install ngrok
         run: wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip;unzip -qq ngrok-stable-linux-amd64.zip;
       - name: Start ngrok tunnel
-        run: ./ngrok authtoken 2rqMCQpGwy8Hefx932ZJQCVS0U0_35MwNuTKQeaCf8Kst8LPL && nohup ngrok http 6000 > /dev/null 2>&1 & sleep 5 && curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"[^"]*' | cut -d'"' -f4 > ngrok_url.txt          # save_url_to_filename: ngrok_url.txt
+        run: ./ngrok authtoken 2rqMCQpGwy8Hefx932ZJQCVS0U0_35MwNuTKQeaCf8Kst8LPL && nohup ngrok http 6000 > /dev/null 2>&1 & sleep 5 && curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"[^"]*' | cut -d'"' -f4           # save_url_to_filename: ngrok_url.txt
 
       - name: Retrieve ngrok URL
         run:  cat ngrok_url.txt ; export NGROK_URL=$(cat ngrok_url.txt) ; echo "NGROK_URL=${NGROK_URL}" ; env
