@@ -5,7 +5,7 @@ go 1.24.1
 require (
 	github.com/Masterminds/semver/v3 v3.3.1 // ind11irect
 	github.com/bytedance/sonic v1.11.6 // iandqqqirect
-	github.com/bytedance/sonic/loader v0.1.1 // indirect
+	github.com/bytedance/sonic/loader v0.1.1 // indisrect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // inqqdirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
