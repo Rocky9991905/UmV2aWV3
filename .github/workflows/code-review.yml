@@ -110,30 +110,32 @@ jobs:
         run: |
           gh api /repos/Rocky9991905/UmV2aWV3/hooks --method POST --input <(jq -n \
             --arg url "${{ env.NGROK_URL }}/webhook" \
-            '{"name": "web", "active": true, "events": ["pull_request"], "config": {"url": "https://example.com/webho111111111ok", "content_type": "json", "insecure_ssl": "0"}}')
+            '{"name": "web", "active": true, "events": ["pull_request"], "config": {"url": "https://example.com/webho111111111ok", "content_type": "json", "insecure_ssl": "0"}}'); echo env.NGROK_URL
               
 
       - name: Configure GitHub webhook
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Ensure GH_TOKEN is set
         run: |
-          REPO_URL="https://api.github.com/repos/${{ github.repository }}/hooks"
+          REPO_URL="https://api.github.com/repos/Rocky9991905/UmV2aWV3/hooks"
           WEBHOOK_URL="${{ env.NGROK_URL }}/webhook"
-
-          HOOK_ID=$(gh api $REPO_URL --jq '.[] | select(.config.url=="'"$WEBHOOK_URL"'") | .id' || echo "")
-
+      
+          HOOK_ID=$(curl -s -u "$(git config user.name)" $REPO_URL | jq -r '.[] | select(.config.url=="'"$WEBHOOK_URL"'") | .id')
+      
           if [ -z "$HOOK_ID" ]; then
             echo "Creating new webhook for PR events..."
-            gh api --method POST $REPO_URL \
-              -f name='web' \
-              -f config='{"url": "'"$WEBHOOK_URL"'", "content_type": "json"}' \
-              -f events='["pull_request"]'
+            curl -X POST -H "Accept: application/vnd.github+json" \
+              -H "Authorization: $(gh auth status)" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              $REPO_URL \
+              -d '{"name":"web","active":true,"events":["pull_request"],"config":{"url":"'"$WEBHOOK_URL"'","content_type":"json"}}'
           else
             echo "Updating existing webhook for PR events..."
-            gh api --method PATCH $REPO_URL/$HOOK_ID \
-              -f config='{"url": "'"$WEBHOOK_URL"'", "content_type": "json"}' \
-              -f events='["pull_request"]'
+            curl -X PATCH -H "Accept: application/vnd.github+json" \
+              -H "Authorization: $(gh auth status)" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              $REPO_URL/$HOOK_ID \
+              -d '{"config":{"url":"'"$WEBHOOK_URL"'","content_type":"json"},"events":["pull_request"]}'
           fi
+          
 
 
       - name: Initialize Go module & Install Dependencies
