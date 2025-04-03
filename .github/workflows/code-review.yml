@@ -129,22 +129,25 @@ jobs:
         run: |
           REPO_URL="/repos/$REPO/hooks"
           WEBHOOK_URL="${CLOUDFLARE_URL}/webhook"
-      
-          if [ -z "$WEBHOOK_URL" ]; then
-            echo "Error: WEBHOOK_URL is not set!" >&2
+
+          echo "DEBUG: CLOUDFLARE_URL='$CLOUDFLARE_URL'"
+          echo "DEBUG: WEBHOOK_URL='$WEBHOOK_URL'"
+
+          if [ -z "$CLOUDFLARE_URL" ]; then
+            echo "Error: CLOUDFLARE_URL is not set!" >&2
             exit 1
           fi
-      
+
           RESPONSE=$(gh api "$REPO_URL" || echo "")
-      
-          if echo "$RESPONSE" | jq -e . >/dev/null 2>&1; then
-            HOOK_ID=$(echo "$RESPONSE" | jq -r --arg url "$WEBHOOK_URL" '.[] | select(.config.url==$url) | .id')
-          else
+
+          if ! echo "$RESPONSE" | jq -e . >/dev/null 2>&1; then
             echo "Error: Invalid JSON response from GitHub API."
             echo "Response: $RESPONSE"
             exit 1
           fi
-      
+
+          HOOK_ID=$(echo "$RESPONSE" | jq -r --arg url "$WEBHOOK_URL" '.[] | select(.config.url==$url) | .id' || echo "")
+
           if [ -z "$HOOK_ID" ] || [ "$HOOK_ID" == "null" ]; then
             echo "Creating new webhook for PR events..."
             gh api --method POST "$REPO_URL" --input <(jq -n --arg url "$WEBHOOK_URL" '{
@@ -157,7 +160,7 @@ jobs:
               }
             }')
           else
-            echo "Updating existing webhook for PR events..."
+            echo "Updating existing webhook with ID: $HOOK_ID"
             gh api --method PATCH "$REPO_URL/$HOOK_ID" --input <(jq -n --arg url "$WEBHOOK_URL" '{
               "config": {
                 "url": $url,
@@ -166,6 +169,7 @@ jobs:
               "events": ["pull_request"]
             }')
           fi
+
 
 
           
