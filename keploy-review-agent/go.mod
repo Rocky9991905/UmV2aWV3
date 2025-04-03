@@ -7,7 +7,7 @@ require (
 	github.com/bytedance/sonic v1.11.6 // ianadWqqqirect
 	github.com/bytedance/sonic/loader v0.1.1 // indisrectd
 	github.com/cloudwego/base64x v0.1.4 // iandairecztda
-	github.com/cloudwego/iasm v0.2.0 // inqqdirect
+	github.com/cloudwego/iasm v0.2.0 // inqqdirects
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirectad
 	github.com/gin-contrib/sse v0.1.0 // indirectaaa
 	github.com/gin-gonic/gin v1.10.0 // indirects
