@@ -65,21 +65,26 @@ jobs:
         with:
           go-version: '1.20'
 
-      - name: start 6000
+      # - name: start 6000
+      #   run: nohup lt --port 8221 > server.log 2>&1 &
+      # - name: Install ngrok
+      #   run: wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip;unzip -qq ngrok-stable-linux-amd64.zip;
+      # - name: Start ngrok tunnel
+      #   run: ./ngrok authtoken 2rqMCQpGwy8Hefx932ZJQCVS0U0_35MwNuTKQeaCf8Kst8LPL && nohup ngrok http 6000 > /dev/null 2>&1 & sleep 5 && curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"[^"]*' | cut -d'"' -f4           # save_url_to_filename: ngrok_url.txt
+
+      # - name: Retrieve ngrok URL
+      #   run:  cat ngrok_url.txt ; export NGROK_URL=$(cat ngrok_url.txt) ; echo "NGROK_URL=${NGROK_URL}" ; env
+      - name: Install Cloudflare Tunnel
+        run: |
+          curl -fsSL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
+          chmod +x cloudflared
+          sudo mv cloudflared /usr/local/bin/
+          
+      - name: Start Python HTTP Server
         run: nohup python3 -m http.server 6000 > server.log 2>&1 &
-      - name: Install ngrok
-        run: wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip;unzip -qq ngrok-stable-linux-amd64.zip;
-      - name: Start ngrok tunnel
-        run: ./ngrok authtoken 2rqMCQpGwy8Hefx932ZJQCVS0U0_35MwNuTKQeaCf8Kst8LPL && nohup ngrok http 6000 > /dev/null 2>&1 & sleep 5 && curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"[^"]*' | cut -d'"' -f4           # save_url_to_filename: ngrok_url.txt
 
-      - name: Retrieve ngrok URL
-        run:  cat ngrok_url.txt ; export NGROK_URL=$(cat ngrok_url.txt) ; echo "NGROK_URL=${NGROK_URL}" ; env
-
-      # - name: Authenticate GitHub CLI
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: gh auth status || gh auth login --with-token <<< "${{ secrets.GITHUB_TOKEN }}"
-
+      - name: Start Cloudflare Tunnel
+        run: nohup cloudflared tunnel --url http://localhost:6000 > cloudflare.log 2>&1 &
 
       # - name: Debug GH_TOKEN
       #   env:
@@ -102,13 +107,39 @@ jobs:
       #         -f config='{"url": "'"${NGROK_URL}/webhook"'", "content_type": "json"}' \
       #         -F events='["pull_request"]'
 
-
-
-      - name: manual test
+      - name: Retrieve Cloudflare Tunnel URL
         run: |
-          gh api /repos/Rocky9991905/UmV2aWV3/hooks --method POST --input <(jq -n \
-            --arg url "${{ env.NGROK_URL }}/webhook" \
-            '{"name": "web", "active": true, "events": ["pull_request"], "config": {"url": "https://example.com/webho111111111$RANDOM", "content_type": "json", "insecure_ssl": "0"}}'); env 
+          sleep 10  # Wait for Cloudflare Tunnel to start
+          CLOUDFLARE_URL=$(grep -oP 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' cloudflare.log | head -n 1)
+          echo "CLOUDFLARE_URL=$CLOUDFLARE_URL" >> $GITHUB_ENV
+
+      - name: Output Cloudflare URL
+        run: echo "Your Cloudflare Tunnel URL is: $CLOUDFLARE_URL"
+
+      - name: Authenticate GitHub CLI
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if ! gh auth status; then
+            echo "Authentication failed. Exiting."
+            exit 1
+          fi
+
+      - name: Create GitHub Webhook
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          gh api --method POST /repos/$REPO/hooks --input <(jq -n --arg url "$CLOUDFLARE_URL/webhook" '{
+            "name": "web",
+            "active": true,
+            "events": ["pull_request"],
+            "config": {
+              "url": $url,
+              "content_type": "json",
+              "insecure_ssl": "0"
+            }
+          }')
+
               
 
       - name: Configure GitHub webhook
