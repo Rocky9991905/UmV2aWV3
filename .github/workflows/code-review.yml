@@ -1,21 +1,21 @@
-# name: Code Review Agent CI/CD
-
-# on:
-#   pull_request:
-#     branches: [ main ]
-
-# jobs:
-#   review:
-#     runs-on: ubuntu-latest
-name: Triggered by External PR
+name: Code Review Agent CI/CD
 
 on:
-  repository_dispatch:
-    types: [external_pr]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   review:
     runs-on: ubuntu-latest
+# name: Triggered by External PR
+
+# on:
+#   repository_dispatch:
+#     types: [external_pr]
+
+# jobs:
+#   review:
+#     runs-on: ubuntu-latest
     env:
       REVIEW_PORT: 8080
       WEBHOOK_PORT: 6969
