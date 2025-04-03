@@ -205,20 +205,21 @@ jobs:
           fi
       - name: Build Go Project
         run: |
-          cd $GITHUB_WORKSPACE  # Ensure we're in the right directory
-          ls -la cmd/server/    # Check if the file exists
+          cd keploy-review-agent  # Change to the correct directory
+          ls -la cmd/server/      # Confirm the file exists
           go build -o review-agent cmd/server/main.go
-      - name: Set Go Environment
-        run: |
-          export GOPATH=$GITHUB_WORKSPACE
-          go mod tidy  # Ensure dependencies are correct
-          go build -o review-agent cmd/server/main.go
-      - name: Run Go Server
-        run: |
-          go run ./cmd/server/main.go
 
-      - name: Build Review Agent
-        run: go build -o review-agent cmd/server/main.go 
+      # - name: Set Go Environment
+      #   run: |
+      #     export GOPATH=$GITHUB_WORKSPACE
+      #     go mod tidy  # Ensure dependencies are correct
+      #     go build -o review-agent cmd/server/main.go
+      # - name: Run Go Server
+      #   run: |
+      #     go run ./cmd/server/main.go
+
+      # - name: Build Review Agent
+      #   run: go build -o review-agent cmd/server/main.go 
 
       - name: Start Review Agent
         env:
