@@ -112,12 +112,24 @@ jobs:
 
       # - name: Build Review Agent
       #   run: go build -o review-agent cmd/server/main.go 
+      - name: Debug Build Output
+        run: |
+          ls -lah keploy-review-agent/
+          file keploy-review-agent/review-agent
+
 
       - name: Start Review Agent
         env:
           PAT_OF_GITHUB: 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  # Using secret instead of hardcoding
         run: |
           nohup ./review-agent  "$PAT_OF_GITHUB" > agent.log 2>&1 &
+      - name: Debug Review Agent Logs
+        run: cat agent.log
+      - name: Check Running Processes
+        run: |
+          ps aux | grep review-agent
+
+    
       - name: sleeping or 10 sec
         run: sleep 10
 
