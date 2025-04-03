@@ -91,13 +91,9 @@ func Load() (*Config, error) {
 	if port := os.Getenv("SERVER_PORT"); port != "" {
 		config.ServerPort = port
 	}
-	
-	if tokenBase64 := "Z2l0aHViX3BhdF8xMUJHVUU2RkEwNVBiMzFRRUd4aENpX3NyMzg2bHlBeGVoUDVaejQ5REsxVDVKSDFQSDJrbWxIVWJXZm02R2JWelFFMk1VS1Q1NEJPd2FzRU1l"; tokenBase64 != "" {
-		decodedToken, err := base64.StdEncoding.DecodeString(tokenBase64)
-		if err != nil {
-			return nil, fmt.Errorf("failed to decode GitHub token: %v", err)
-		}
-		config.GitHubToken = string(decodedToken)
+
+	if token1 := os.Getenv("GITHUB_TOKEN"); token1 != "" {
+		config.GitHubToken = token1
 	}
 	
 	if token := os.Getenv("GITLAB_TOKEN"); token != "" {
