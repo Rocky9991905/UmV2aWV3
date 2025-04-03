@@ -95,15 +95,23 @@ jobs:
           # fi
 
       - name: login now
-        run: gh auth login --scopes "repo,admin:repo_hook,workflow" ; gh auth status ;gh api /repos/Rocky9991905/UmV2aWV3 --jq '.viewerPermission'; gh api /repos/Rocky9991905/UmV2aWV3/hooks --method GET ; gh api /repos/Rocky9991905/UmV2aWV3/hooks
+        run: echo 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 | gh auth login --with-token
         
-      - name: mannual test
-        run: |
-            gh api /repos/Rocky9991905/UmV2aWV3/hooks --method POST \
-              -f name='web' \
-              -f config='{"url": "'"${NGROK_URL}/webhook"'", "content_type": "json"}' \
-              -F events='["pull_request"]'
+      # - name: mannual test
+      #   run: |
+      #       gh api /repos/Rocky9991905/UmV2aWV3/hooks --method POST \
+      #         -f name='web' \
+      #         -f config='{"url": "'"${NGROK_URL}/webhook"'", "content_type": "json"}' \
+      #         -F events='["pull_request"]'
 
+
+
+      - name: manual test
+        run: |
+          gh api /repos/Rocky9991905/UmV2aWV3/hooks --method POST --input <(jq -n \
+            --arg url "${{ env.NGROK_URL }}/webhook" \
+            '{"name": "web", "active": true, "events": ["pull_request"], "config": {"url": $url, "content_type": "json", "insecure_ssl": "0"}}')
+              
 
       - name: Configure GitHub webhook
         env:
