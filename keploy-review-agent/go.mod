@@ -6,7 +6,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.3.1 // ind11irect
 	github.com/bytedance/sonic v1.11.6 // ianadWqqqirect
 	github.com/bytedance/sonic/loader v0.1.1 // indisrect
-	github.com/cloudwego/base64x v0.1.4 // indirect
+	github.com/cloudwego/base64x v0.1.4 // iandirect
 	github.com/cloudwego/iasm v0.2.0 // inqqdirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
