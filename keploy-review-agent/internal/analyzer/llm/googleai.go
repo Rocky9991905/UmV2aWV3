@@ -57,7 +57,7 @@ func (g *GoogleAIClient) AnalyzeCode(ctx context.Context, files []*models.File) 
 			fmt.Println("Skipping file:", file.Path)
 			continue
 		}
-
+	
 		issues, err := g.analyzeFile(ctx, file)
 		if err != nil {
 			log.Printf("AI analysis failed for %s: %v", file.Path, err)
@@ -66,7 +66,7 @@ func (g *GoogleAIClient) AnalyzeCode(ctx context.Context, files []*models.File) 
 
 		// fmt.Println("Raw issues from AI before filtering:", issues)
 		allIssues = append(allIssues, filterIssues(issues, g.config.MinSeverity)...)
-		// fmt.Println("Filtered issues for", file.Path, ":", allIssues)
+		fmt.Println("Filtered issues for", file.Path, ":", allIssues)
 	}
 
 	fmt.Println("AnalyzeCode: Completed analysis with", len(allIssues), "total issues")
