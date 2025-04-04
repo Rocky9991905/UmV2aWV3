@@ -151,7 +151,7 @@ jobs:
 
       - name: Start Review Agent
         env:
-          PAT_OF_GITHUB: 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  # Using secret instead of hardcoding
+          PAT_OF_GITHUB: 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  # Using secret instead of hardcoding
         run: |
           cd keploy-review-agent;
           pwd;
