@@ -196,7 +196,8 @@ jobs:
         run: echo "Your Cloudflare Tunnel URL is" $CLOUDFLARE_URL
 
       - name: Authenticate GitHub CLI
-        run: gh auth login
+        run: gh auth login --with-token <<< ${{ secrets.PAT_OF_GITHUB }}
+
       - name: Set REPO Variable
         run: echo "REPO=${{ env.TARGET_REPO }}" >> $GITHUB_ENV
 
