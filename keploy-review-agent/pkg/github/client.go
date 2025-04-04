@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os/exec"
 	"log"
 	"net/http"
 	"time"
@@ -45,28 +46,17 @@ func NewClient(token string) *Client {
 	}
 }
 
-func (c *Client) GetChangedFiles(ctx context.Context, owner, repo string, pullNumber int) ([]*models.File, error) {
-	url := fmt.Sprintf("%s/repos/%s/%s/pulls/%d/files", c.baseURL, owner, repo, pullNumber)
-	fmt.Printf("Fetching PR files from: %s\n", url)
+func (c *Client)GetChangedFiles(ctx context.Context, owner, repo string, pullNumber int) ([]*models.File, error) {
+	cmd := exec.CommandContext(ctx, "gh", "api",
+		fmt.Sprintf("repos/%s/%s/pulls/%d/files", owner, repo, pullNumber),
+	)
+	fmt.Printf("cmd: %s\n", cmd.String())
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
+	var out bytes.Buffer
+	cmd.Stdout = &out
 
-	req.Header.Set("Authorization", "token "+c.token)
-	req.Header.Set("Accept", "application/vnd.github.v3+json")
-	fmt.Printf("Base64 encoded token: %s\n", base64.StdEncoding.EncodeToString([]byte(c.token)))
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to send request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := ioutil.ReadAll(resp.Body)
-		return nil, fmt.Errorf("GitHub API error: %s, response: %s", resp.Status, string(body))
+	if err := cmd.Run(); err != nil {
+		return nil, fmt.Errorf("failed to run gh command: %w", err)
 	}
 
 	var prFiles []struct {
@@ -75,17 +65,17 @@ func (c *Client) GetChangedFiles(ctx context.Context, owner, repo string, pullNu
 		RawURL   string `json:"raw_url"`
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&prFiles); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
+	if err := json.Unmarshal(out.Bytes(), &prFiles); err != nil {
+		return nil, fmt.Errorf("failed to parse JSON: %w", err)
 	}
 
 	var files []*models.File
 	for _, prFile := range prFiles {
 		if prFile.Status == "removed" {
-			continue // Skip deleted files
+			continue
 		}
 
-		// Fetch raw file content directly from GitHub
+		// You can fetch raw content using gh too, or fall back to normal HTTP
 		content, err := fetchRawContent(ctx, prFile.RawURL)
 		if err != nil {
 			return nil, fmt.Errorf("failed to fetch content for %s: %w", prFile.Filename, err)
@@ -127,58 +117,50 @@ func fetchRawContent(ctx context.Context, rawURL string) (string, error) {
 }
 
 // CreateReview creates a pull request review with comments
-func (c *Client) CreateReview(ctx context.Context, owner, repo string, pullnumber int, comments []*models.ReviewComment) error {
-	url := fmt.Sprintf("%s/repos/%s/%s/issues/%d/comments", c.baseURL, owner, repo, pullnumber)
-	// print all comments
-	for _, comment := range comments {
-		fmt.Printf("comments are ..,.,.,  : %v\n", comment)
-	}
-	// 📝 **Format comments as Markdown**
+func (c *Client) CreateReview(ctx context.Context, owner, repo string, pullNumber int, comments []*models.ReviewComment) error {
+	// 📝 Compose the markdown body
 	var markdownComment string
 	markdownComment += "### 📝 Automated Review Comments\n\n"
 	markdownComment += "Thank you for raising this pull request. Below are the review comments:\n\n"
 
 	for _, comment := range comments {
+		fmt.Printf("Comment: %+v\n", comment) // debug print
 		markdownComment += fmt.Sprintf(
 			"- **File:** `%s`\n  - **Position:** %d\n  - **Comment:** %s\n\n",
 			comment.Path, comment.Position, comment.Body,
 		)
 	}
 
-	// log.Printf("Generated Markdown Comment:\n%s", markdownComment)
-
-	// 📨 **Prepare request payload**
 	payload := map[string]interface{}{
 		"body": markdownComment,
 	}
 
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
-		return fmt.Errorf("failed to marshal review payload: %w", err)
+		return fmt.Errorf("failed to marshal payload: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonPayload))
-	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
+	// 🔧 Build `gh api` command
+	cmd := exec.CommandContext(ctx, "gh", "api",
+		fmt.Sprintf("repos/%s/%s/issues/%d/comments", owner, repo, pullNumber),
+		"--method", "POST",
+		"--header", "Accept: application/vnd.github.v3+json",
+		"--input", "-",
+	)
+	fmt.Printf("cmd: %s\n", cmd.String())
+
+	cmd.Stdin = bytes.NewReader(jsonPayload)
+
+	var out bytes.Buffer
+	var stderr bytes.Buffer
+	cmd.Stdout = &out
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("gh api error: %v\nstderr: %s", err, stderr.String())
 	}
 
-	req.Header.Set("Authorization", "token "+c.token)
-	req.Header.Set("Accept", "application/vnd.github.v3+json")
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("failed to send request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		body, _ := ioutil.ReadAll(resp.Body)
-		log.Printf("GitHub API Response: %s", string(body))
-		return fmt.Errorf("GitHub API error: %s, %s", resp.Status, string(body))
-	}
-
-	log.Println("Review successfully posted to GitHub.")
+	fmt.Println("✅ Review comment posted using gh CLI.")
 	return nil
 }
 
