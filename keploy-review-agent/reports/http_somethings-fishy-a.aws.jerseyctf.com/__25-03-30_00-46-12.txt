@@ -1,4 +1,0 @@
-# Dirsearch started Sun Mar 30 00:49:24 2025 as: /usr/lib/python3/dist-packages/dirsearch/dirsearch.py -u http://somethings-fishy-a.aws.jerseyctf.com/
-
-200    25KB  http://somethings-fishy-a.aws.jerseyctf.com/download
-200    41B   http://somethings-fishy-a.aws.jerseyctf.com/robots.txt
