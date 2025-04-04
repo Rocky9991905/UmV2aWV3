@@ -94,18 +94,15 @@ func (s *Scanner) checkDeps(ctx context.Context, ecosystem string, deps map[stri
 			continue
 		}
 
-		// Print full response for debugging
 		responseJSON, _ := json.MarshalIndent(result, "", "  ")
 		fmt.Println(string(responseJSON))
 
-		// Extract advisories
 		advisoryKeys, exists := result["advisoryKeys"].([]interface{})
 		if !exists || len(advisoryKeys) == 0 {
 			fmt.Println("No advisories found for", pkg)
 			continue
 		}
 
-		// Fetch details for each advisory
 		for _, adv := range advisoryKeys {
 			advMap, ok := adv.(map[string]interface{})
 			if !ok || advMap["id"] == nil {
@@ -128,8 +125,7 @@ func (s *Scanner) checkDeps(ctx context.Context, ecosystem string, deps map[stri
 				continue
 			}
 			fmt.Printf("Advisory details for %s: %v\n", advisoryID, advDetail)
-			
-			// Extract CVSS score if available
+
 			cvssScore := 0.0 // Use a zero value for float64
 			if score, exists := advDetail["cvss3Score"].(float64); exists {  // Adjusted to access directly as float64
 				cvssScore = score
@@ -147,7 +143,6 @@ func (s *Scanner) checkDeps(ctx context.Context, ecosystem string, deps map[stri
 			title := advDetail["title"].(string)
 			fmt.Printf("Found vulnerability in %s: %s (CVSS: %.1f)\n", pkg, title, cvssScore)
 
-			// Report only critical vulnerabilities (CVSS >= 7.0)
 			if cvssScore >= 7.0 {
 				issue := &models.Issue{
 					Path:        pkg,
@@ -162,7 +157,7 @@ func (s *Scanner) checkDeps(ctx context.Context, ecosystem string, deps map[stri
 	}
 
 	fmt.Println("********************************************************************************")
-	// print all issues
+
 	for _, issue := range issues {
 		fmt.Printf("Issue: %s, %s, %s, %s\n", issue.Path, issue.Title, issue.Description, issue.Severity)
 	}
@@ -173,7 +168,6 @@ func (s *Scanner) checkDeps(ctx context.Context, ecosystem string, deps map[stri
 	return issues
 }
 
-// Helper functions to parse dependency files
 func parseGoMod(content string) map[string]string {
 	fmt.Println("********************************************************************************")
 	fmt.Println("Parsing go.mod file content...")

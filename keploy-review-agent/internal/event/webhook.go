@@ -22,24 +22,21 @@ func NewWebhookHandler(cfg *config.Config) *WebhookHandler {
 }
 
 func (h *WebhookHandler) HandleGitHub(c *gin.Context) {
-	// Verify GitHub signature
+
 	signature := c.GetHeader("X-Hub-Signature-256")
 	if signature == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Missing signature"})
 		return
 	}
 
-	// Read body
 	body, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read request body"})
 		return
 	}
 
-	// Get event type
 	eventType := c.GetHeader("X-GitHub-Event")
 
-	// Process only pull request events
 	if eventType == "pull_request" {
 		go func() {
 			log.Printf("webhook file mein hoon ")
@@ -53,17 +50,15 @@ func (h *WebhookHandler) HandleGitHub(c *gin.Context) {
 }
 
 func (h *WebhookHandler) HandleGitLab(c *gin.Context) {
-	// Read body
+
 	body, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read request body"})
 		return
 	}
 
-	// Get event type
 	eventType := c.GetHeader("X-Gitlab-Event")
 
-	// Process only merge request events
 	if eventType == "Merge Request Hook" {
 		go func() {
 			if err := h.processor.ProcessGitLabEvent(eventType, body); err != nil {
@@ -76,6 +71,6 @@ func (h *WebhookHandler) HandleGitLab(c *gin.Context) {
 }
 
 func (h *WebhookHandler) HandleManualAnalysis(c *gin.Context) {
-	// TODO: Implement manual analysis
+
 	c.JSON(http.StatusNotImplemented, gin.H{"status": "not implemented"})
 }

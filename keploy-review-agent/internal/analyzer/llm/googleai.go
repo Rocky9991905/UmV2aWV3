@@ -37,7 +37,7 @@ type AIConfig struct {
 }
 
 func NewGoogleAIClient(apiKey string, cfg *AIConfig) *GoogleAIClient {
-	// fmt.Println("Initializing GoogleAIClient with API Key:", apiKey)
+
 	return &GoogleAIClient{
 		apiKey: apiKey,
 		httpClient: &http.Client{
@@ -48,11 +48,11 @@ func NewGoogleAIClient(apiKey string, cfg *AIConfig) *GoogleAIClient {
 }
 
 func (g *GoogleAIClient) AnalyzeCode(ctx context.Context, files []*models.File) ([]*models.Issue, error) {
-	// fmt.Println("AnalyzeCode: Starting code analysis on", len(files), "files")
+
 	var allIssues []*models.Issue
 
 	for _, file := range files {
-		// fmt.Println("Processing file:", file.Path)
+
 		if shouldSkipFile(file.Path) {
 			fmt.Println("Skipping file:", file.Path)
 			continue
@@ -64,7 +64,6 @@ func (g *GoogleAIClient) AnalyzeCode(ctx context.Context, files []*models.File) 
 			continue
 		}
 
-		// fmt.Println("Raw issues from AI before filtering:", issues)
 		allIssues = append(allIssues, filterIssues(issues, g.config.MinSeverity)...)
 		fmt.Println("Filtered issues for", file.Path, ":", allIssues)
 	}
@@ -76,14 +75,14 @@ func (g *GoogleAIClient) AnalyzeCode(ctx context.Context, files []*models.File) 
 func shouldSkipFile(path string) bool {
 	ext := filepath.Ext(path)
 	skip := !(ext == ".go" || ext == ".js" || ext == ".ts" || ext == ".py")
-	// fmt.Println("Checking if file should be skipped:", path, "->", skip)
+
 	return skip
 }
 
 func (g *GoogleAIClient) analyzeFile(ctx context.Context, file *models.File) ([]*models.Issue, error) {
 	fmt.Println("Analyzing file:", file.Path)
 	prompt := buildPrompt(file.Content)
-	// fmt.Println("Generated prompt:\n", prompt)
+
 
 	var response string
 	var err error
@@ -102,7 +101,6 @@ func (g *GoogleAIClient) analyzeFile(ctx context.Context, file *models.File) ([]
 		return nil, err
 	}
 
-	// fmt.Println("Raw AI response:", response)
 	return parseAIResponse(response, file.Path)
 }
 
@@ -128,7 +126,6 @@ Rules:
 3. Suggest concrete fixes
 4. Avoid trivial/style-only issues`, code)
 
-	// fmt.Println("Built prompt for analysis:\n", prompt)
 	return prompt
 }
 
@@ -156,7 +153,7 @@ func (g *GoogleAIClient) generateContent(ctx context.Context, prompt string) (st
 	}
 
 	jsonBody, _ := json.Marshal(requestBody)
-	// fmt.Println("Request body JSON:\n", string(jsonBody))
+
 
 	req, _ := http.NewRequestWithContext(ctx, "POST",
 		fmt.Sprintf("%s?key=%s", googleAIEndpoint, g.apiKey),
@@ -197,12 +194,11 @@ func (g *GoogleAIClient) generateContent(ctx context.Context, prompt string) (st
 		return "", fmt.Errorf("no content in response")
 	}
 
-	// fmt.Println("Received AI response:", response.Candidates[0].Content.Parts[0].Text)
 	return response.Candidates[0].Content.Parts[0].Text, nil
 }
 
 func parseAIResponse(response, filePath string) ([]*models.Issue, error) {
-    // fmt.Println("Parsing AI response for", filePath)
+
 
     jsonStr := jsonRegex.FindString(response)
     if jsonStr == "" {
@@ -210,9 +206,7 @@ func parseAIResponse(response, filePath string) ([]*models.Issue, error) {
         return nil, fmt.Errorf("no JSON found in response")
     }
 
-    // fmt.Println("Extracted JSON:\n", jsonStr)
 
-    // Attempt to fix truncated JSON
     if !strings.HasSuffix(strings.TrimSpace(jsonStr), "]") {
         fmt.Println("Detected incomplete JSON, attempting to fix...")
         jsonStr += "]" // Close the JSON array (basic fix)
@@ -232,7 +226,6 @@ func parseAIResponse(response, filePath string) ([]*models.Issue, error) {
         return nil, fmt.Errorf("invalid JSON format: %w", err)
     }
 
-    // fmt.Println("Parsed issues:", rawIssues)
     var issues []*models.Issue
 
     for _, ri := range rawIssues {
@@ -251,7 +244,6 @@ func parseAIResponse(response, filePath string) ([]*models.Issue, error) {
         })
     }
 
-    // fmt.Println("Final parsed issues:", issues)
     return issues, nil
 }
 

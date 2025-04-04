@@ -1,165 +1,138 @@
-// package static
 
-// import (
-// 	"bytes"
-// 	"context"
 
-// 	"encoding/json"
 
-// 	"fmt"
 
-// 	"io/ioutil"
 
-// 	"log"
 
-// 	"os"
 
-// 	"os/exec"
 
-// 	"path/filepath"
 
-// 	"strings"
 
-// 	"github.com/keploy/keploy-review-agent/internal/config"
-// 	"github.com/keploy/keploy-review-agent/pkg/models"
-// )
 
-// type Linter struct {
-// 	cfg *config.Config
-// }
-// var Comment string
-// func NewLinter(cfg *config.Config) *Linter {
-// 	return &Linter{
-// 		cfg: cfg,
-// 	}
-// }
 
-// func (l *Linter) Analyze(ctx context.Context, files []*models.File) ([]*models.Issue, error) {
-// // func (l *Linter) Analyze(ctx context.Context, files []*models.File) (string , error) {
 
-// 	var issues []*models.Issue
-// 	tempDir, err := ioutil.TempDir("", "keploy-review-")
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to create temp directory: %w", err)
-// 	}
-// 	defer os.RemoveAll(tempDir)
-// 	fmt.Printf("Dinf \n")
-// 	goFiles := []string{}
-// 	for _, file := range files {
-// 		if !strings.HasSuffix(file.Path, ".go") {
-// 			comment := "Add a Go code file to your PR"
-// 			fmt.Printf("Also  %s\n", comment)
-// 			Comment = comment
-// 			continue
-// 		}
-// 		log.Printf("mein static analyser mein hoon linter.go mein Analyze mein")
-// 		filePath := filepath.Join(tempDir, filepath.Base(file.Path))
-// 		if err := ioutil.WriteFile(filePath, []byte(file.Content), 0644); err != nil {
-// 			return nil, fmt.Errorf("failed to write file %s: %w", file.Path, err)
-// 		}
-// 		goFiles = append(goFiles, filePath)
-// 		fmt.Printf("goFiles: %s\n", goFiles)
-// 	}
 
-// 	if len(goFiles) == 0 {
-// 		log.Printf("No Go files to analyze")
-// 		return issues, nil
-// 	}
-// 	linterIssues, err := l.runGolangCILint(ctx, tempDir, goFiles)
-// 	fmt.Printf("linterIssues: are ghhhhh %v\n", linterIssues)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to run golangci-lint: %w", err)
-// 	}
 
-// 	return issues,nil
-// 	// return "ghoda hoon mein", nil
-// }
 
-// func (l *Linter) runGolangCILint(ctx context.Context, dir string, files []string) ([]*models.Issue, error) {
-// 	var issues []*models.Issue
 
-// 	if _, err := exec.LookPath("golangci-lint"); err != nil {
-// 		return nil, fmt.Errorf("golangci-lint not found: %w", err)
-// 	}
 
-// 	configPath := filepath.Join(dir, ".golangci.yml")
-// 	configContent := `
-// linters:
-//   enable:
-//     - errcheck
-//     - gosimple
-//     - govet
-//     - ineffassign
-//     - staticcheck
-//     - unused
-//     - misspell
-// issues:
-//   max-issues-per-linter: 0
-//   max-same-issues: 0
-// `
-// 	if err := ioutil.WriteFile(configPath, []byte(configContent), 0644); err != nil {
-// 		return nil, fmt.Errorf("failed to write golangci-lint config: %w", err)
-// 	}
 
-// 	args := []string{"run", "--config", configPath, "--out-format", "json"}
-// 	args = append(args, files...)
 
-// 	cmd := exec.CommandContext(ctx, "golangci-lint", args...)
-// 	cmd.Dir = dir
 
-// 	var stdout, stderr bytes.Buffer
-// 	cmd.Stdout = &stdout
-// 	cmd.Stderr = &stderr
 
-// 	err := cmd.Run()
-// 	if err != nil && stdout.Len() == 0 {
-// 		return nil, fmt.Errorf("golangci-lint failed: %s", stderr.String())
-// 	}
 
-// 	if stdout.Len() > 0 {
-// 		var result struct {
-// 			Issues []struct {
-// 				FromLinter  string `json:"from_linter"`
-// 				Text        string `json:"text"`
-// 				Pos         struct {
-// 					Filename string `json:"filename"`
-// 					Line     int    `json:"line"`
-// 					Column   int    `json:"column"`
-// 				} `json:"pos"`
-// 			} `json:"Issues"`
-// 		}
 
-// 		if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
-// 			return nil, fmt.Errorf("failed to parse golangci-lint output: %w", err)
-// 		}
 
-// 		for _, issue := range result.Issues {
-// 			issues = append(issues, &models.Issue{
-// 				Path:        issue.Pos.Filename,
-// 				Line:        issue.Pos.Line,
-// 				Column:      issue.Pos.Column,
-// 				Severity:    models.SeverityWarning,
-// 				Title:       fmt.Sprintf("[%s] Code issue", issue.FromLinter),
-// 				Description: issue.Text,
-// 				Source:      "golangci-lint",
-// 			})
-// 		}
-// 	}
-// 	log.Printf("issues are from runGolangCILint function are: %v", issues)
-// 	return issues, nil
-// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 package static
 
 import (
-	// "bytes"
+
 	"bytes"
 	"context"
 	"encoding/json"
 
-	// "io"
 
-	// "encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -168,7 +141,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	// "github.com/golangci/golangci-lint/pkg/lint/linter"
 	"github.com/keploy/keploy-review-agent/internal/config"
 	"github.com/keploy/keploy-review-agent/pkg/models"
 )
@@ -188,7 +160,6 @@ func NewLinter(cfg *config.Config) *Linter {
 func (l *Linter) Analyze(ctx context.Context, files []*models.File) ([]*models.Issue, error) {
 	var issues []*models.Issue
 
-	// Create a temporary directory
 	tempDir, err := ioutil.TempDir("", "keploy-review-")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp directory: %w", err)
@@ -212,13 +183,11 @@ func (l *Linter) Analyze(ctx context.Context, files []*models.File) ([]*models.I
 			continue // Ignore non-Go/TS files
 		}
 
-		// Write file to temp directory
 		if err := ioutil.WriteFile(filePath, []byte(file.Content), 0644); err != nil {
 			return nil, fmt.Errorf("failed to write file %s: %w", file.Path, err)
 		}
 	}
 
-	// Handle missing file cases
 	if !hasGo && !hasTS {
 		log.Println("No Go or TypeScript files detected in PR")
 		Comment = "Add either a Go or TypeScript file to your PR"
@@ -233,25 +202,22 @@ func (l *Linter) Analyze(ctx context.Context, files []*models.File) ([]*models.I
 		Comment = "Add a TypeScript code file to your PR"
 	}
 
-	// Run ESLint for TypeScript files if available
 	if len(tsFiles) > 0 {
 		linterOutput, err := l.RunESLint(ctx, tempDir, tsFiles)
 		if err != nil {
 			log.Fatalf("Error running ESLint: %v", err)
 		}
 
-		// Process linter output (TS files)
 		issues = append(issues, processLinterOutput(linterOutput)...)
 	}
 
-	// Uncomment this if you want to process Go files as well
-	// if len(goFiles) > 0 {
-	// 	linterOutput, err := l.runGolangCILint(ctx, tempDir, goFiles)
-	// 	if err != nil {
-	// 		log.Fatalf("Error running Go linter: %v", err)
-	// 	}
-	// 	issues = append(issues, processLinterOutput(linterOutput)...)
-	// }
+
+
+
+
+
+
+
 
 	fmt.Printf("Total Issues Found: %d\n", len(issues))
 	for i, issue := range issues {
@@ -264,14 +230,12 @@ func (l *Linter) Analyze(ctx context.Context, files []*models.File) ([]*models.I
 func processLinterOutput(output string) []*models.Issue {
 	var issues []*models.Issue
 
-	// Trim spaces and check if output is empty
 	output = strings.TrimSpace(output)
 	if output == "" {
 		fmt.Println("Linter output is empty")
 		return nil
 	}
 
-	// Parse JSON as an array
 	var lintResults []struct {
 		FilePath string `json:"filePath"`
 		Messages []struct {
@@ -288,11 +252,10 @@ func processLinterOutput(output string) []*models.Issue {
 		return nil
 	}
 
-	// Convert ESLint issues to models.Issue format
 	for _, result := range lintResults {
 		for _, msg := range result.Messages {
 			if msg.Message == "File ignored because no matching configuration was supplied." {
-				// Skip ignored files
+
 				continue
 			}
 
@@ -313,7 +276,6 @@ func processLinterOutput(output string) []*models.Issue {
 	return issues
 }
 
-// Converts ESLint severity to string
 func severityToString(severity int) string {
 	switch severity {
 	case 1:
@@ -327,13 +289,12 @@ func severityToString(severity int) string {
 
 
 func (l *Linter) runGolangCILint(ctx context.Context, dir string, files []string) (string, error) {
-	// Ensure golangci-lint is installed
+
 	if _, err := exec.LookPath("/snap/bin/golangci-lint"); err != nil {
 		fmt.Println("golangci-lint not found:", err)
 		return "", nil // Don't stop execution
 	}
 
-	// Write .golangci.yml configuration file
 	configPath := filepath.Join(dir, ".golangci.yml")
 	configContent := `
 version: 2 
@@ -352,7 +313,6 @@ linters:
 		return "", nil // Don't stop execution
 	}
 
-	// Build the command dynamically
 	cmdArgs := []string{
 		"/snap/bin/golangci-lint", "run",
 		"--config", configPath,
@@ -360,11 +320,9 @@ linters:
 	}
 	cmdArgs = append(cmdArgs, files...)
 
-	// Run the linter and capture output/errors
 	cmd := exec.CommandContext(ctx, cmdArgs[0], cmdArgs[1:]...)
 	output, err := cmd.CombinedOutput()
 
-	// Print errors but DON'T return them (to avoid stopping execution)
 	if err != nil {
 		fmt.Println("golangci-lint encountered an error:", err)
 	}
@@ -377,7 +335,6 @@ func (l *Linter) RunESLint(ctx context.Context, dir string, files []string) (str
 		return "", fmt.Errorf("no files provided for ESLint")
 	}
 
-	// Ensure ESLint config file exists in the working directory
 	configPath := filepath.Join(dir, "eslint.config.js")
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		configContent :=
@@ -404,7 +361,6 @@ func (l *Linter) RunESLint(ctx context.Context, dir string, files []string) (str
 		}
 	}
 
-	// Ensure package.json exists with module type
 	packagePath := filepath.Join(dir, "package.json")
 	if _, err := os.Stat(packagePath); os.IsNotExist(err) {
 		packageContent := "{\"type\": \"module\"}"
@@ -413,11 +369,10 @@ func (l *Linter) RunESLint(ctx context.Context, dir string, files []string) (str
 		}
 	}
 
-	// Check if @eslint/js is installed
 	cmdCheck := exec.CommandContext(ctx, "npm", "list", "@eslint/js")
 	cmdCheck.Dir = dir
 	if err := cmdCheck.Run(); err != nil {
-		// Install @eslint/js if not found
+
 		cmdInstall := exec.CommandContext(ctx, "npm", "install", "--save-dev", "@eslint/js")
 		cmdInstall.Dir = dir
 		if err := cmdInstall.Run(); err != nil {
@@ -425,7 +380,6 @@ func (l *Linter) RunESLint(ctx context.Context, dir string, files []string) (str
 		}
 	}
 
-	// Run ESLint
 	args := append([]string{"--format", "json", "--config", configPath}, files...)
 	cmd := exec.CommandContext(ctx, "npx", append([]string{"eslint"}, args...)...)
 	cmd.Dir = dir
@@ -438,7 +392,6 @@ func (l *Linter) RunESLint(ctx context.Context, dir string, files []string) (str
 		fmt.Printf("ESLint encountered issues but continuing: %s\n", err)
 	}
 
-	// Ensure valid JSON output
 	var lintResults []map[string]interface{}
 	if jsonErr := json.Unmarshal(out.Bytes(), &lintResults); jsonErr != nil {
 		return "", fmt.Errorf("invalid ESLint JSON output: %w\nOutput: %s", jsonErr, out.String())

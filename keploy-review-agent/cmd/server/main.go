@@ -56,7 +56,6 @@ func extractPullNumber(PullRequest_url string) string {
 		return ""
 	}
 
-	// The pull number is typically the last part of the URL
 	return parts[len(parts)-1]
 }
 
@@ -75,7 +74,6 @@ func extractOwnerAndRepo(PullRequest_url string) (string, string, error) {
 	return owner, repo, nil
 }
 
-// Start HTTP server for handling GitHub events
 func startServer(wg *sync.WaitGroup) {
 	defer wg.Done()
 	fmt.Printf("Starting server on port 6969 holalal\n")
@@ -83,7 +81,6 @@ func startServer(wg *sync.WaitGroup) {
 		fmt.Fprintf(w, "Welcome")
 	})
 
-	// http.HandleFunc("/github", func(w http.ResponseWriter, r *http.Request) {
 	url := os.Getenv("PULL_REQUEST_URL")
 	owner, repo, err := extractOwnerAndRepo(url)
 	pullnumber := extractPullNumber(url)
@@ -97,7 +94,6 @@ func startServer(wg *sync.WaitGroup) {
 		return
 	}
 
-	// Prepare payload for sending to localhost
 	body := Payload{
 		Action: "opened",
 		PullRequest: PullRequest{
@@ -121,7 +117,6 @@ func startServer(wg *sync.WaitGroup) {
 		},
 	}
 
-	// Marshal body to JSON
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
 		log.Panic("Error marshalling JSON:", err)
@@ -129,9 +124,8 @@ func startServer(wg *sync.WaitGroup) {
 	}
 	fmt.Println(string(jsonBody))
 
-	// Send POST request to localhost (via curl)
 	go func() {
-		// Run the curl command asynchronously to avoid blocking
+
 		curlCmd := exec.Command("curl", "-X", "POST",
 			"-H", "Content-Type: application/json",
 			"-H", "X-GitHub-Event: pull_request",
@@ -139,7 +133,6 @@ func startServer(wg *sync.WaitGroup) {
 			"-d", string(jsonBody),
 			"http://localhost:8080/webhook/github")
 
-		// Run the curl command
 		output, err := curlCmd.CombinedOutput()
 		fmt.Printf("Output: %s\n", output)
 		if err != nil {
@@ -148,48 +141,41 @@ func startServer(wg *sync.WaitGroup) {
 		}
 	}()
 
-	// w.Write([]byte("success"))
-	// })
 
-	// Start the server
-	// log.Printf("Server is running on port 6969")
-	// err := http.ListenAndServe(":6969", nil)
-	// if err != nil {
-	// 	log.Fatalln("Error starting server: ", err)
-	// }
+
+
+
+
+
+
 }
 
 func main() {
-	// Load configuration
+
 	if len(os.Args) < 3 {
 		log.Fatalf("Usage: %s <config-file-path>", os.Args[0])
 	}
 	Githubtoken := os.Args[1]
-	// Set the GitHub token as an environment variable
+
 	err := os.Setenv("GITHUB_TOKEN", Githubtoken)
-	// print base64 encoded token
+
 	fmt.Printf("Base64 encoded token: in main.go %s\n", base64.StdEncoding.EncodeToString([]byte(Githubtoken)))
 
 	PullRequest_URL := os.Args[2]
 
-	// Set the pull request URL as an environment variable
 	err = os.Setenv("PULL_REQUEST_URL", PullRequest_URL)
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 
-	// WaitGroup to synchronize the servers and curl request
 	var wg sync.WaitGroup
 
-	// Start server for handling GitHub webhook events
 	wg.Add(1)
 	go startServer(&wg)
 
-	// Setup router for the main server
 	router := api.NewRouter(cfg)
 
-	// Create HTTP server for the main application
 	server := &http.Server{
 		Addr:         ":" + cfg.ServerPort,
 		Handler:      router,
@@ -198,7 +184,6 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	// Start the main server
 	go func() {
 		log.Printf("Server starting on port %s", cfg.ServerPort)
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -206,20 +191,17 @@ func main() {
 		}
 	}()
 
-	// Wait for shutdown signal
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 	log.Println("Shutting down server...")
 
-	// Graceful shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
 		log.Fatalf("Server forced to shutdown: %v", err)
 	}
 
-	// Wait for the GitHub server to finish its processing
 	wg.Wait()
 	log.Println("Server exited properly")
 }

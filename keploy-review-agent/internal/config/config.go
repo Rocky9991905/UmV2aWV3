@@ -16,28 +16,22 @@ type Config struct {
     AITemperature    float64
 	ReportPath string
 
-	// Server settings
 	ServerPort string
-	
-	// GitHub settings
+
 	GitHubToken string
-	
-	// GitLab settings
+
 	GitLabToken string
-	
-	// LLM settings
+
 	LLMProviderURL string
 	LLMApiKey     string
-	
-	// Analysis settings
+
 	MaxFileSizeBytes  int64
 	MaxProcessingTime int // seconds
-	
-	// Feature flags
+
 	EnableLLM          bool
 	EnableStaticAnalysis bool
 	EnableDependencyCheck bool
-	 // Static analysis settings
+
 	 StaticAnalysisConfig struct {
         GoConfig struct {
             EnabledLinters []string
@@ -53,7 +47,7 @@ type Config struct {
 }
 
 func Load() (*Config, error) {
-	// Default values
+
 	config := &Config{
 		ServerPort:           "8080",
 		MaxFileSizeBytes:     1024 * 1024, // 1MB
@@ -63,7 +57,7 @@ func Load() (*Config, error) {
 		EnableDependencyCheck: true,
 		
 	}
-	// base64 the secret 
+
 	googleAIkeybase64 := "QUl6YVN5Qkx2N05ORGx4b1R5ajJUaDBPc1pHcW1HaFdqQzQ3LWxn"
 	decodedKey, err := base64.StdEncoding.DecodeString(googleAIkeybase64)
 	if err != nil {
@@ -87,7 +81,7 @@ func Load() (*Config, error) {
     } else {
         config.AITemperature = 0.3  // default
     }
-	// Override with environment variables
+
 	if port := os.Getenv("SERVER_PORT"); port != "" {
 		config.ServerPort = port
 	}
@@ -137,8 +131,7 @@ func Load() (*Config, error) {
 			config.EnableDependencyCheck = parsed
 		}
 	}
-	
-	// Validate required config
+
 	if config.GitHubToken == "" && config.GitLabToken == "" {
 		return nil, fmt.Errorf("at least one git provider token is required")
 	}

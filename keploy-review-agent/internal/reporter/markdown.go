@@ -11,11 +11,9 @@ import (
 func GenerateMarkdownReport(issues []*models.Issue) string {
 	var builder strings.Builder
 
-	// Header
 	builder.WriteString("# Code Analysis Report\n\n")
 	builder.WriteString(fmt.Sprintf("**Generated at**: %s\n\n", time.Now().Format(time.RFC1123)))
 
-	// Summary Section
 	summary := make(map[models.Severity]int)
 	for _, issue := range issues {
 		summary[issue.Severity]++
@@ -28,16 +26,13 @@ func GenerateMarkdownReport(issues []*models.Issue) string {
 	builder.WriteString(fmt.Sprintf("| 🟠 Warning | %d |\n", summary[models.SeverityWarning]))
 	builder.WriteString(fmt.Sprintf("| ℹ️  Info | %d |\n\n", summary[models.SeverityInfo]))
 
-	// Detailed Findings
 	builder.WriteString("## Detailed Findings\n")
 
-	// Group issues by severity
 	grouped := make(map[models.Severity][]*models.Issue)
 	for _, issue := range issues {
 		grouped[issue.Severity] = append(grouped[issue.Severity], issue)
 	}
 
-	// Write sections in severity order
 	severities := []models.Severity{
 		models.SeverityError,
 		models.SeverityWarning,
