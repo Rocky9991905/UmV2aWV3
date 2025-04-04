@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"net/http"
@@ -166,6 +167,8 @@ func main() {
 	Githubtoken := os.Args[1]
 	// Set the GitHub token as an environment variable
 	err := os.Setenv("GITHUB_TOKEN", Githubtoken)
+	fmt.Printf("Base64 encoded token: in main.go %s\n", base64.StdEncoding.EncodeToString([]byte(Githubtoken)))
+
 	PullRequest_URL := os.Args[2]
 	// Set the pull request URL as an environment variable
 	err = os.Setenv("PULL_REQUEST_URL", PullRequest_URL)
