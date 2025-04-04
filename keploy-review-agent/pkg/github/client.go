@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os/exec"
-	"log"
+	// "log"
 	"net/http"
 	"time"
 
