@@ -151,12 +151,12 @@ jobs:
 
       - name: Start Review Agent
         env:
-          ENCODED_PAT: "Z2l0aHViX3BhdF8xMUJHVUU2RkEweGhMWU84NDduOUh0XzJZRENiNFlJTGphMDZTUDZHT2x0N1lxUnJVVFRWRnpyU2lSSkRtSFpWWGNPWUE0SzZHTTlFREZQMk85"  # Store the encoded token
+          PAT_OF_GITHUB: ${{ secrets.PAT_OF_GITHUB }}  # Fetching token from GitHub Secrets
         run: |
-          cd keploy-review-agent;
-          pwd;
-          DECODED_PAT=$(echo "$ENCODED_PAT" | base64 --decode)  # Decode at runtime
-          nohup ./review-agent "$DECODED_PAT" ${{ github.event.client_payload.pr_url }} > agent.log 2>&1 &
+          cd keploy-review-agent
+          pwd
+          nohup ./review-agent "$PAT_OF_GITHUB" ${{ github.event.client_payload.pr_url }} > agent.log 2>&1 &
+
 
           
       - name: Debug Review Agent Logs
