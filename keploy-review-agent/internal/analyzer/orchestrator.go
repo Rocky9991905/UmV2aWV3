@@ -140,11 +140,12 @@ func (o *Orchestrator) AnalyzeCode(job *Job) ([]*models.Issue, error) {
 	for issue := range resultsCh {
 		AllIssues = append(AllIssues, issue)
 	}
-
+	
 	// Format and prepare comments
 	comments := o.prepareComments(AllIssues)
 
 	// Send review comments
+	fmt.Printf("CoMMENTS are: %v\n", comments)
 	if err := o.sendReviewComment(ctx, job, comments); err != nil {
 		log.Printf("Warning: Failed to send review comments: %v", err)
 	}
