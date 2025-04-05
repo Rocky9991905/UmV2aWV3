@@ -575,7 +575,7 @@ jobs:
           pwd;
           ls -la review;
           cd review/samples ;
-          keploy record -c "docker-compose up" --buildDelay 60
+          keploy record -c "docker compose up" --buildDelay 60 
 
         env:
           REVIEW_PORT: 8080
