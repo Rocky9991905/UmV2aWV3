@@ -594,7 +594,7 @@ jobs:
       - name: stop 5 sec
         run: sleep 5
       - name: logs
-        run: ls -la ; pwd 
+        run: ls -la ; pwd ; cd review/samples ; ls -la
       - name: curling
         run:  curl localhost:5000 2>/dev/null
       - name: debugging if files there or not
