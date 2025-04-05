@@ -337,7 +337,12 @@ jobs:
           echo "DELAY_IN_SECONDS=${{ github.event.client_payload.Delay_in_seconds }}" >> $GITHUB_ENV
           echo "PATH_OF_SCRIPT_SH=${{ github.event.client_payload.path_of_script.sh }}" >> $GITHUB_ENV
           echo "REPO=${{ github.event.client_payload.repo }}" >> $GITHUB_ENV
-
+          echo "all the data got from the PR"
+          echo "${GITHUB_TOKEN_FOR_PEROXIDE}"
+          echo "${COMMAND_FOR_RUNNING_APPLICATION}"
+          echo "${DELAY_IN_SECONDS}"
+          echo "${PATH_OF_SCRIPT_SH}"
+          echo "${REPO}"
       - name: Update system packages
         run: sudo apt update
 
