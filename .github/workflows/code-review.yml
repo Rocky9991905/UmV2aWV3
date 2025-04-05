@@ -591,7 +591,7 @@ jobs:
           ls -la
           sudo mkdir -p /tmp/keploy-records
           sudo chmod 777 /tmp/keploy-records
-          sudo keploy record -c "${{github.event.client_payload.command_for_running_application}}" --container-name "flask-web" --network-name "keploy-network" --path "/tmp/keploy-records" --debug
+          sudo keploy record -c "${{github.event.client_payload.command_for_running_application}}" --container-name "flask-web"  --debug
       - name: curling
         run: curl localhost:5000
       - name: debugging if files there or not
