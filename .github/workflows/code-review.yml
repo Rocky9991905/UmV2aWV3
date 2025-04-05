@@ -620,7 +620,7 @@ jobs:
 
       #     sudo keploy test -c ${{github.event.client_payload.command_for_running_application}} > keploy-test.log 2>&1 &
       - name: ghofa
-        run: cd review/samples; tree 
+        run: cat review/samples/keploy/test-set-0/tests/test-1.yaml; tree 
       # - name: checkif working otr not
       #   run: curl localhost:6969
       # - name: Install Cloudflare Tunnel
