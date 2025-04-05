@@ -533,7 +533,7 @@ jobs:
       - name: record with keploy
         run: |
           keploy record -c ${{github.event.client_payload.command_for_running_application}} --delay ${{ github.event.client_payload.Delay_in_seconds }} 
-      - name: debugging if files there or snot
+      - name: debugging if files there or not
         run: |
           echo "Current Directory $(pwd)"
           echo "Contents of the directory:"
