@@ -515,6 +515,7 @@ jobs:
           ls -la
           echo "Contents of the keploy-review-agent directory:"
           ls -la keploy-review-agent
+          ls -la review
       - name: install keploy
         run: |
            curl --silent -O -L https://keploy.io/install.sh && source install.sh
