@@ -434,12 +434,12 @@ jobs:
       - name: Debug Current Directory
         run: pwd && ls -lah
 
-      - name: Fix Permissions
-        run: chmod +x keploy-review-agent/review-agent
-      - name: Check Executable Permissions
-        run: ls -lah keploy-review-agent/review-agent
-      - name: Verify Binary Compatibility
-        run: file keploy-review-agent/review-agent
+      # - name: Fix Permissions
+      #   run: chmod +x keploy-review-agent/review-agent
+      # - name: Check Executable Permissions
+      #   run: ls -lah keploy-review-agent/review-agent
+      # - name: Verify Binary Compatibility
+      #   run: file keploy-review-agent/review-agent
       # - name: Check Dynamic Dependencies
       #   run: ldd keploy-review-agent/review-agent
       # - name: Build Statically Linked Binary
