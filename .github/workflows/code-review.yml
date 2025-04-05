@@ -732,6 +732,16 @@ jobs:
         working-directory: /home/runner/work/UmV2aWV3/UmV2aWV3
       - name: cat final.md
         run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/final.md
+      - name: send comment
+        run: |  
+          curl -X POST \
+          -H "Authorization: token ${{ github.event.client_payload.github_token_for_peroxide }}" \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Content-Type: application/json" \
+          -d @- \
+          "https://api.github.com/repos/octocat/Hello-World/issues/42/comments" \
+          < /home/runner/work/UmV2aWV3/UmV2aWV3/final.md
+
       # - name: checkif working otr not
       #   run: curl localhost:6969
       # - name: Install Cloudflare Tunnel
