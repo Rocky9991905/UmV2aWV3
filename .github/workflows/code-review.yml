@@ -533,13 +533,13 @@ jobs:
           echo "Current Directory: $(pwd)"
           echo "Contents of the directory:"
           ls -la
-      - name: tessting real application
-        run: |
-          cd review
-          echo "Current Directory: $(pwd)"
-          echo "Contents of the directory:"
-          ls -la
-          echo ${{github.event.client_payload.command_for_running_application}}
+      # - name: tessting real application
+      #   run: |
+      #     cd review
+      #     echo "Current Directory: $(pwd)"
+      #     echo "Contents of the directory:"
+      #     ls -la
+      #     echo ${{github.event.client_payload.command_for_running_application}}
       # - name: lsof
       #   run: sudo lsof -i :16789,26789
       - name: record with keploy
@@ -550,7 +550,9 @@ jobs:
           ls -la
           cd samples;
           ls -la
-          sudo keploy record -c ${{github.event.client_payload.command_for_running_application}} --container-name "flask-web"
+          sudo keploy record -c ${{github.event.client_payload.command_for_running_application}} --container-name "flask-web"  > keploy.log 2>&1 &
+      - name: curling
+        run: curl localhost:5000
       - name: debugging if files there or not
         run: |
           echo "Current Directory $(pwd)"
@@ -565,7 +567,7 @@ jobs:
           cd samples;
           ls -la
 
-          sudo keploy test -c ${{github.event.client_payload.command_for_running_application}}
+          sudo keploy test -c ${{github.event.client_payload.command_for_running_application}} > keploy-test.log 2>&1 &
       # - name: checkif working otr not
       #   run: curl localhost:6969
       # - name: Install Cloudflare Tunnel
