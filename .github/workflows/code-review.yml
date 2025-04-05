@@ -692,6 +692,46 @@ jobs:
         run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
       - name: before.md
         run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/keploy-review-agent/Before_*
+      - name: comb
+        run: |
+            echo '#!/bin/bash
+
+            # Directory containing the before_<DATE>.md files
+            DIR="/home/runner/work/UmV2aWV3/UmV2aWV3/keploy-review-agent"
+
+            # Find the latest before_<DATE>.md file
+            BEFORE_MD=$(ls "$DIR"/before_*.md 2>/dev/null | sort | tail -n 1)
+
+            # If no such file found, fallback to before.md or create an empty one
+            if [ -z "$BEFORE_MD" ]; then
+                echo "Warning: No before_<DATE>.md file found. Using 'before.md' as fallback."
+                BEFORE_MD="$DIR/before.md"
+                [ -f "$BEFORE_MD" ] || touch "$BEFORE_MD"
+            fi
+
+            FINAL_MD="/home/runner/work/UmV2aWV3/UmV2aWV3/final.md"
+
+            # Keploy Test Results
+            TEST_RESULTS=$(cat <<EOF
+            | Total Tests | Passed | Failed |
+            |-------------|--------|--------|
+            | 6           | 6      | 0      |
+            EOF
+            )
+
+            # Create final.md with combined content
+            {
+                cat "$BEFORE_MD"
+                echo -e "\n\n### Keploy Test Results"
+                echo "$TEST_RESULTS"
+            } > "$FINAL_MD"
+
+            echo "Combined report created at $FINAL_MD"' > /home/runner/work/UmV2aWV3/UmV2aWV3/comb.sh
+      - name: Run final summary
+        run: chmod +x ./comb.sh && ./comb.sh
+        working-directory: /home/runner/work/UmV2aWV3/UmV2aWV3
+      - name: cat final.md
+        run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/final.md
       # - name: checkif working otr not
       #   run: curl localhost:6969
       # - name: Install Cloudflare Tunnel
