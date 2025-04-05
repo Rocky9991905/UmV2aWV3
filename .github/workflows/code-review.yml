@@ -541,8 +541,8 @@ jobs:
           echo "Contents of the directory:"
           ls -la
           ${{github.event.client_payload.command_for_running_application}}
-      - name: lsof
-        run: sudo lsof -i :16789,26789
+      # - name: lsof
+      #   run: sudo lsof -i :16789,26789
       - name: record with keploy
         run: |
           cd review
