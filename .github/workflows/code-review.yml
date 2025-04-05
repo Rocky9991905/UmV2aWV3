@@ -572,8 +572,9 @@ jobs:
       - name: Run Keploy
         run: |
           ls -la;
-          cd samples;
           pwd;
+          ls -la review;
+          cd review/samples ;
           keploy record -c "docker-compose up" --buildDelay 60
 
         env:
