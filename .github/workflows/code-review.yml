@@ -640,7 +640,7 @@ jobs:
 
       #     sudo keploy test -c ${{github.event.client_payload.command_for_running_application}} > keploy-test.log 2>&1 &
       - name: ghofa
-        run: cd review/samples;tree; cd keploy/reports/test-run-0/ ; cat *;
+        run: cd review/samples;tree -I 'node_modules'; cd keploy/reports/test-run-0/ ; cat *;
 
       - name: savien
         run: |
@@ -814,7 +814,7 @@ jobs:
       #       "events": ["pull_request"]
       #     }')
       - name: tree
-        run: tree
+        run: tree -I 'node_modules'
       - name: Debug Review Agent Logs
         run: |
           ls -la; pwd ; ps aux | grep review
