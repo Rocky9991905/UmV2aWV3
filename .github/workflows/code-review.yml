@@ -595,8 +595,23 @@ jobs:
         run: sleep 60
       - name: logs
         run: ls -la ; pwd ; cd review/samples ; ls -la ; cat keploy-run.log
-      - name: curling
-        run:  curl localhost:5000 2>/dev/null
+      - name: Run Curl Commands
+        run: |
+          # Test if the server is running
+          curl localhost:5000 2>/dev/null ;
+          
+          # Add a new book via POST request
+          curl -X POST http://localhost:5000/books/ \
+          -H "Content-Type: application/json" \
+          -d '{"title": "1984", "author": "George Orwell"}';
+
+          # Get the list of books with pagination
+          curl -X GET "http://localhost:5000/books/?page=1&limit=10";
+
+          # Update the book with ID 1
+          curl -X PUT http://localhost:5000/books/1 \
+          -H "Content-Type: application/json" \
+          -d '{"title": "1984 - Updated", "author": "George Orwell"}';
       - name: debugging if files there or not
         run: |
           echo "Current Directory $(pwd)"
