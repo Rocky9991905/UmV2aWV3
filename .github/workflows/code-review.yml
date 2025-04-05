@@ -523,9 +523,21 @@ jobs:
       - name: test keploy
         run: |
           keploy --help
-      # - name: record with keploy
-      #   run: |
-      #     cd 
+      - name: install the requriments of the repo
+        run: |
+          cd review;
+          chmod +x ${{ github.event.client_payload.path_of_script.sh }}/script.sh
+          echo "Current Directory: $(pwd)"
+          echo "Contents of the directory:"
+          ls -la
+      - name: record with keploy
+        run: |
+          keploy record -c ${{github.event.client_payload.command_for_running_application}} --delay ${{ github.event.client_payload.Delay_in_seconds }} 
+      - name:debugging if files there or not
+        run:|
+          echo "Current Directory $(pwd)"
+          echo "Contents of the directory:"
+          ls -la
       # - name: checkif working otr not
       #   run: curl localhost:6969
       - name: Install Cloudflare Tunnel
