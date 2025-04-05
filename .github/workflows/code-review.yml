@@ -544,127 +544,129 @@ jobs:
           ls -la
       # - name: checkif working otr not
       #   run: curl localhost:6969
-      - name: Install Cloudflare Tunnel
-        run: |
-          curl -fsSL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
-          chmod +x cloudflared
-          sudo mv cloudflared /usr/local/bin/
-      # - name: Start Python HTTP Server
-      #   run: nohup python3 -m http.server 6969 > server.log 2>&1 &
+      # - name: Install Cloudflare Tunnel
+      #   run: |
+      #     curl -fsSL https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
+      #     chmod +x cloudflared
+      #     sudo mv cloudflared /usr/local/bin/
+      # # - name: Start Python HTTP Server
+      # #   run: nohup python3 -m http.server 6969 > server.log 2>&1 &
 
-      - name: Start Cloudflare Tunnel
-        run: nohup cloudflared tunnel --url http://localhost:6969 > cloudflare.log 2>&1 &
+      # - name: Start Cloudflare Tunnel
+      #   run: nohup cloudflared tunnel --url http://localhost:6969 > cloudflare.log 2>&1 &
 
-      - name: Retrieve Cloudflare Tunnel URL
-        run: |
-          sleep 10  # Wait for Cloudflare Tunnel to start
-          CLOUDFLARE_URL=$(grep -oP 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' cloudflare.log | head -n 1)
-          if [ -z "$CLOUDFLARE_URL" ]; then
-            echo "Error: Cloudflare Tunnel URL not found!" >&2
-            exit 1
-          fi
-          echo "CLOUDFLARE_URL=$CLOUDFLARE_URL" >> $GITHUB_ENV
-      - name: Output Cloudflare URL
-        run: echo "Your Cloudflare Tunnel URL is" $CLOUDFLARE_URL
+      # - name: Retrieve Cloudflare Tunnel URL
+      #   run: |
+      #     sleep 10  # Wait for Cloudflare Tunnel to start
+      #     CLOUDFLARE_URL=$(grep -oP 'https://[a-zA-Z0-9.-]+\.trycloudflare\.com' cloudflare.log | head -n 1)
+      #     if [ -z "$CLOUDFLARE_URL" ]; then
+      #       echo "Error: Cloudflare Tunnel URL not found!" >&2
+      #       exit 1
+      #     fi
+      #     echo "CLOUDFLARE_URL=$CLOUDFLARE_URL" >> $GITHUB_ENV
+      # - name: Output Cloudflare URL
+      #   run: echo "Your Cloudflare Tunnel URL is" $CLOUDFLARE_URL
 
-      - name: Authenticate GitHub CLI
-        run: gh auth login --with-token <<< ${{ secrets.PAT_OF_GITHUB }}
+      # - name: Authenticate GitHub CLI
+      #   run: gh auth login --with-token <<< ${{ secrets.PAT_OF_GITHUB }}
 
-      - name: Set REPO Variable
-        run: echo "REPO=${{ env.TARGET_REPO }}" >> $GITHUB_ENV
+      # - name: Set REPO Variable
+      #   run: echo "REPO=${{ env.TARGET_REPO }}" >> $GITHUB_ENV
 
-      - name: Validate Required Variables
-        run: |
-          if [ -z "$CLOUDFLARE_URL" ]; then
-            echo "❌ Error: CLOUDFLARE_URL is not set!" >&2
-            exit 1
-          else
-            echo "✅ CLOUDFLARE_URL is set: $CLOUDFLARE_URL"
-          fi
+      # - name: Validate Required Variables
+      #   run: |
+      #     if [ -z "$CLOUDFLARE_URL" ]; then
+      #       echo "❌ Error: CLOUDFLARE_URL is not set!" >&2
+      #       exit 1
+      #     else
+      #       echo "✅ CLOUDFLARE_URL is set: $CLOUDFLARE_URL"
+      #     fi
       
-          if [ -z "$REPO" ]; then
-            echo "❌ Error: REPO is not set!" >&2
-            exit 1
-          else
-            echo "✅ REPO is set: $REPO"
-          fi
-      - name: Generate Webhook JSON Config
-        run: |
-          jq -n --arg url "${CLOUDFLARE_URL}/webhook" '{
-            "name": "web",
-            "active": true,
-            "events": ["pull_request"],
-            "config": {
-              "url": $url,
-              "content_type": "json",
-              "insecure_ssl": "0"
-            }
-          }' > webhook_payload.json
+      #     if [ -z "$REPO" ]; then
+      #       echo "❌ Error: REPO is not set!" >&2
+      #       exit 1
+      #     else
+      #       echo "✅ REPO is set: $REPO"
+      #     fi
+      # - name: Generate Webhook JSON Config
+      #   run: |
+      #     jq -n --arg url "${CLOUDFLARE_URL}/webhook" '{
+      #       "name": "web",
+      #       "active": true,
+      #       "events": ["pull_request"],
+      #       "config": {
+      #         "url": $url,
+      #         "content_type": "json",
+      #         "insecure_ssl": "0"
+      #       }
+      #     }' > webhook_payload.json
       
-          echo "🔍 Generated Webhook JSON:"
-          cat webhook_payload.json
-      - name: Debug GitHub Authentication
-        run: |
-          echo "🔍 Checking GitHub authentication..."
-          gh auth status || { echo "❌ GitHub CLI is not authenticated!"; exit 1; }
-      - name: Create GitHub Webhook
-        run: |
-          echo "🚀 Creating GitHub Webhook for repository: $REPO"
-          gh api --method POST /repos/$REPO/hooks --input webhook_payload.json
-      - name: Set Environment Variables
-        run: |
-          echo "REPO_URL=/repos/${{ env.TARGET_REPO }}/hooks" >> $GITHUB_ENV
-          echo "WEBHOOK_URL=${{ env.CLOUDFLARE_URL }}/webhook" >> $GITHUB_ENV
-      - name: Validate Required Variables
-        run: |
-          echo "DEBUG: CLOUDFLARE_URL='${{ env.CLOUDFLARE_URL }}'"
-          echo "DEBUG: WEBHOOK_URL='${{ env.WEBHOOK_URL }}'"
-          if [ -z "${{ env.CLOUDFLARE_URL }}" ]; then
-            echo "Error: CLOUDFLARE_URL is not set!" >&2
-            exit 1
-          fi
-      - name: Fetch Existing Webhooks
-        run: |
-          RESPONSE=$(gh api "${{ env.REPO_URL }}" || echo "")
-          if ! echo "$RESPONSE" | jq -e . >/dev/null 2>&1; then
-            echo "Error: Invalid JSON response from GitHub API."
-            echo "Response: $RESPONSE"
-            exit 1
-          fi
-          echo "GITHUB_API_RESPONSE=$RESPONSE" >> $GITHUB_ENV
-      - name: Check Existing Webhook
-        run: |
-          HOOK_ID=$(echo '${{ env.GITHUB_API_RESPONSE }}' | jq -r --arg url "${{ env.WEBHOOK_URL }}" '.[] | select(.config.url==$url) | .id' || echo "")
-          if [ -n "$HOOK_ID" ] && [ "$HOOK_ID" != "null" ]; then
-            echo "Webhook already exists with ID: $HOOK_ID"
-            echo "HOOK_ID=$HOOK_ID" >> $GITHUB_ENV
-          else
-            echo "No existing webhook found."
-          fi
-      - name: Create Webhook (If Needed)
-        if: env.HOOK_ID == ''
-        run: |
-          echo "Creating new webhook for PR events..."
-          gh api --method POST "${{ env.REPO_URL }}" --input <(jq -n --arg url "${{ env.WEBHOOK_URL }}" '{
-            "name": "web",
-            "active": true,
-            "events": ["pull_request"],
-            "config": {
-              "url": $url,
-              "content_type": "json"
-            }
-          }')
-      - name: Update Existing Webhook
-        if: env.HOOK_ID != ''
-        run: |
-          echo "Updating existing webhook with ID: $HOOK_ID"
-          gh api --method PATCH "${{ env.REPO_URL }}/$HOOK_ID" --input <(jq -n --arg url "${{ env.WEBHOOK_URL }}" '{
-            "config": {
-              "url": $url,
-              "content_type": "json"
-            },
-            "events": ["pull_request"]
-          }')
+      #     echo "🔍 Generated Webhook JSON:"
+      #     cat webhook_payload.json
+      # - name: Debug GitHub Authentication
+      #   run: |
+      #     echo "🔍 Checking GitHub authentication..."
+      #     gh auth status || { echo "❌ GitHub CLI is not authenticated!"; exit 1; }
+      # - name: Create GitHub Webhook
+      #   run: |
+      #     echo "🚀 Creating GitHub Webhook for repository: $REPO"
+      #     gh api --method POST /repos/$REPO/hooks --input webhook_payload.json
+      # - name: Set Environment Variables
+      #   run: |
+      #     echo "REPO_URL=/repos/${{ env.TARGET_REPO }}/hooks" >> $GITHUB_ENV
+      #     echo "WEBHOOK_URL=${{ env.CLOUDFLARE_URL }}/webhook" >> $GITHUB_ENV
+      # - name: Validate Required Variables
+      #   run: |
+      #     echo "DEBUG: CLOUDFLARE_URL='${{ env.CLOUDFLARE_URL }}'"
+      #     echo "DEBUG: WEBHOOK_URL='${{ env.WEBHOOK_URL }}'"
+      #     if [ -z "${{ env.CLOUDFLARE_URL }}" ]; then
+      #       echo "Error: CLOUDFLARE_URL is not set!" >&2
+      #       exit 1
+      #     fi
+      # - name: Fetch Existing Webhooks
+      #   run: |
+      #     RESPONSE=$(gh api "${{ env.REPO_URL }}" || echo "")
+      #     if ! echo "$RESPONSE" | jq -e . >/dev/null 2>&1; then
+      #       echo "Error: Invalid JSON response from GitHub API."
+      #       echo "Response: $RESPONSE"
+      #       exit 1
+      #     fi
+      #     echo "GITHUB_API_RESPONSE=$RESPONSE" >> $GITHUB_ENV
+      # - name: Check Existing Webhook
+      #   run: |
+      #     HOOK_ID=$(echo '${{ env.GITHUB_API_RESPONSE }}' | jq -r --arg url "${{ env.WEBHOOK_URL }}" '.[] | select(.config.url==$url) | .id' || echo "")
+      #     if [ -n "$HOOK_ID" ] && [ "$HOOK_ID" != "null" ]; then
+      #       echo "Webhook already exists with ID: $HOOK_ID"
+      #       echo "HOOK_ID=$HOOK_ID" >> $GITHUB_ENV
+      #     else
+      #       echo "No existing webhook found."
+      #     fi
+      # - name: Create Webhook (If Needed)
+      #   if: env.HOOK_ID == ''
+      #   run: |
+      #     echo "Creating new webhook for PR events..."
+      #     gh api --method POST "${{ env.REPO_URL }}" --input <(jq -n --arg url "${{ env.WEBHOOK_URL }}" '{
+      #       "name": "web",
+      #       "active": true,
+      #       "events": ["pull_request"],
+      #       "config": {
+      #         "url": $url,
+      #         "content_type": "json"
+      #       }
+      #     }')
+      # - name: Update Existing Webhook
+      #   if: env.HOOK_ID != ''
+      #   run: |
+      #     echo "Updating existing webhook with ID: $HOOK_ID"
+      #     gh api --method PATCH "${{ env.REPO_URL }}/$HOOK_ID" --input <(jq -n --arg url "${{ env.WEBHOOK_URL }}" '{
+      #       "config": {
+      #         "url": $url,
+      #         "content_type": "json"
+      #       },
+      #       "events": ["pull_request"]
+      #     }')
+      - name: tree
+        run: tree
       - name: Debug Review Agent Logs
         run: |
           ls -la; pwd ; ps aux | grep review
