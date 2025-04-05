@@ -534,9 +534,13 @@ jobs:
           echo "Current Directory: $(pwd)"
           echo "Contents of the directory:"
           ls -la
+      - name: tessting real application
+        run: ${{github.event.client_payload.command_for_running_application}}
+      - name: lsof
+        run: sudo lsof -i :16789,26789
       - name: record with keploy
         run: |
-          sudo keploy record -c ${{github.event.client_payload.command_for_running_application}} 
+          sudo keploy record -c ${{github.event.client_payload.command_for_running_application}} --network host  --debug
       - name: debugging if files there or not
         run: |
           echo "Current Directory $(pwd)"
