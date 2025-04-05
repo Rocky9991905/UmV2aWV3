@@ -304,14 +304,62 @@ func fetchRawContent(ctx context.Context, rawURL string) (string, error) {
 
 
 
+// func (c *Client) CreateReview(ctx context.Context, owner, repo string, pullnumber int, comments []*models.ReviewComment) error {
+// 	url := fmt.Sprintf("%s/repos/%s/%s/issues/%d/comments", c.baseURL, owner, repo, pullnumber)
+
+// 	for _, comment := range comments {
+// 		fmt.Printf("comments are ..,.,.,  : %v\n", comment)
+// 	}
+// 	fmt.Printf("URL is: %s\n", url)
+
+// 	var markdownComment string
+// 	markdownComment += "### 📝 Automated Review Comments\n\n"
+// 	markdownComment += "Thank you for raising this pull request. Below are the review comments:\n\n"
+
+// 	for _, comment := range comments {
+// 		markdownComment += fmt.Sprintf(
+// 			"- **File:** %s\n  - **Position:** %d\n  - **Comment:** %s\n\n",
+// 			comment.Path, comment.Position, comment.Body,
+// 		)
+// 	}
+
+
+// 	payload := map[string]interface{}{
+// 		"body": markdownComment,
+// 	}
+
+// 	jsonPayload, err := json.Marshal(payload)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to marshal review payload: %w", err)
+// 	}
+
+// 	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonPayload))
+// 	if err != nil {
+// 		return fmt.Errorf("failed to create request: %w", err)
+// 	}
+
+// 	req.Header.Set("Authorization", "token "+c.token)
+// 	req.Header.Set("Accept", "application/vnd.github.v3+json")
+// 	req.Header.Set("Content-Type", "application/json")
+
+// 	resp, err := c.httpClient.Do(req)
+// 	if err != nil {
+// 		return fmt.Errorf("failed to send request: %w", err)
+// 	}
+// 	defer resp.Body.Close()
+
+// 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+// 		body, _ := ioutil.ReadAll(resp.Body)
+// 		log.Printf("GitHub API Response: %s", string(body))
+// 		return fmt.Errorf("GitHub API error: %s, %s", resp.Status, string(body))
+// 	}
+
+// 	log.Println("Review successfully posted to GitHub.")
+// 	return nil
+// }
+
 func (c *Client) CreateReview(ctx context.Context, owner, repo string, pullnumber int, comments []*models.ReviewComment) error {
-	url := fmt.Sprintf("%s/repos/%s/%s/issues/%d/comments", c.baseURL, owner, repo, pullnumber)
-
-	for _, comment := range comments {
-		fmt.Printf("comments are ..,.,.,  : %v\n", comment)
-	}
-	fmt.Printf("URL is: %s\n", url)
-
+	// Format the comment
 	var markdownComment string
 	markdownComment += "### 📝 Automated Review Comments\n\n"
 	markdownComment += "Thank you for raising this pull request. Below are the review comments:\n\n"
@@ -323,41 +371,19 @@ func (c *Client) CreateReview(ctx context.Context, owner, repo string, pullnumbe
 		)
 	}
 
+	// Generate filename using current timestamp
+	timestamp := time.Now().Format("2006-01-02_15-04-05")
+	filename := fmt.Sprintf("Before_review_%s.md", timestamp)
 
-	payload := map[string]interface{}{
-		"body": markdownComment,
-	}
-
-	jsonPayload, err := json.Marshal(payload)
+	// Write to file
+	err := os.WriteFile(filename, []byte(markdownComment), 0644)
 	if err != nil {
-		return fmt.Errorf("failed to marshal review payload: %w", err)
+		return fmt.Errorf("failed to write review to file: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonPayload))
-	if err != nil {
-		return fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("Authorization", "token "+c.token)
-	req.Header.Set("Accept", "application/vnd.github.v3+json")
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("failed to send request: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
-		body, _ := ioutil.ReadAll(resp.Body)
-		log.Printf("GitHub API Response: %s", string(body))
-		return fmt.Errorf("GitHub API error: %s, %s", resp.Status, string(body))
-	}
-
-	log.Println("Review successfully posted to GitHub.")
+	log.Printf("*********************************************************************************************Review comments saved to file: %s\n", filename)
 	return nil
 }
-
 func base64Decode(content string) ([]byte, error) {
 	decoded, err := base64.StdEncoding.DecodeString(content)
 	if err != nil {
