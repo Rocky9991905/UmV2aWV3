@@ -542,31 +542,42 @@ jobs:
       #     echo ${{github.event.client_payload.command_for_running_application}}
       # - name: lsof
       #   run: sudo lsof -i :16789,26789
-      - name: Install Dependencies
-        run: |
-          pip install flask
-          sudo apt-get remove docker docker-engine docker.io containerd runc
-          curl -fsSL https://get.docker.com -o get-docker.sh
-          sudo sh get-docker.sh
-          docker --version
+      # - name: Install Dependencies
+      #   run: |
+      #     pip install flask
+      #     sudo apt-get remove docker docker-engine docker.io containerd runc
+      #     curl -fsSL https://get.docker.com -o get-docker.sh
+      #     sudo sh get-docker.sh
+      #     docker --version
           
 
       - name: Create Keploy Network
-        run: docker network create keploy-network || true
+        run: |
+          pip install flask
+          docker network create keploy-network || true
+      - name:
+        run: |
+          sudo lsof -i :6379  # Redis port
+          sudo lsof -i :8080  # Flask port
+          sudo lsof -i :16789 # Keploy proxy
+
       - name: Prepare Keploy Environment
         run: |
           sudo mkdir -p /tmp/keploy-records
           sudo chmod 777 /tmp/keploy-records
       - name: Run Keploy
         run: |
+          docker compose down
           keploy record -c "docker compose up" \
             --container-name "flask-web" \
             --network-name "keploy-network" \
-            --path "/tmp/keploy-records" \
+            --path "$(pwd)/keploy-records" \
+            --config-path "." \
             --debug
         env:
           REVIEW_PORT: 8080
           WEBHOOK_PORT: 6969
+        
         
       - name: record with keploy
         run: |
