@@ -618,7 +618,7 @@ jobs:
           echo "Contents of the directory:"
       - name: stopping services
         run: |
-          docker stop $(docker ps -q) ; fuser -k 5000/tcp || true ; fuser -k 1639/tcp
+          docker stop $(docker ps -q) || true ; fuser -k 5000/tcp || true ; fuser -k 1639/tcp || true
       - name: testtt Keploy
         run: |
           pwd;
