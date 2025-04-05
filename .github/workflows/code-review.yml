@@ -548,7 +548,7 @@ jobs:
           echo "Current Directory: $(pwd)"
           echo "Contents of the directory:"
           ls -la
-          sudo keploy record -c ${{github.event.client_payload.command_for_running_application}} 
+          sudo keploy record -c ${{github.event.client_payload.command_for_running_application}} --container-name "flask-web"
       - name: debugging if files there or not
         run: |
           echo "Current Directory $(pwd)"
