@@ -624,11 +624,11 @@ jobs:
           pwd;
           ls -la review;
           cd review/samples ;
-          keploy test -c "docker compose up" --debug > keploy-test.log 2>&1 &
-      - name: stop 5 sec
-        run: sleep 60
-      - name: logs
-        run: ls -la ; pwd ; cd review/samples ; ls -la ; cat keploy-test.log
+          keploy test -c "docker compose up" --debug 
+      # - name: stop 5 sec
+      #   run: sleep 60
+      # - name: logs
+      #   run: ls -la ; pwd ; cd review/samples ; ls -la ; cat keploy-test.log
       # - name: testing
       #   run: |
       #     cd review
