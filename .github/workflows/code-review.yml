@@ -526,7 +526,6 @@ jobs:
       - name: install the requriments of the repo
         run: |
           cd review;
-          cat *
           cat script.sh
           # echo ${{ github.event.client_payload.path_of_script.sh }}
           # echo "${{ github.event.client_payload.path_of_script.sh }}/script.sh"
