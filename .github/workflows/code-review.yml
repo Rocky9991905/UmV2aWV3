@@ -594,7 +594,7 @@ jobs:
       #     sudo chmod 777 /tmp/keploy-records
       #     sudo keploy record -c "${{github.event.client_payload.command_for_running_application}}" --container-name "flask-web"  --debug
       - name: curling
-        run: curl localhost:5000
+        run: ps aux 
       - name: debugging if files there or not
         run: |
           echo "Current Directory $(pwd)"
