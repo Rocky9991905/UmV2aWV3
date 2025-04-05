@@ -568,7 +568,7 @@ jobs:
       - name: docker ps -a
         run: docker ps -a
       - name: locally
-        run: cd samples; docker compose up ;
+        run: ls -la ; pwd; docker compose up ;
       - name: Run Keploy
         run: |
           ls -la;
