@@ -690,6 +690,8 @@ jobs:
         working-directory: /home/runner/work/UmV2aWV3/UmV2aWV3
       - name: review.md
         run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+      - name: before.md
+        run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/keploy-review-agent/Before_*
       # - name: checkif working otr not
       #   run: curl localhost:6969
       # - name: Install Cloudflare Tunnel
