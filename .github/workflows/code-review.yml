@@ -574,9 +574,6 @@ jobs:
           pwd;
           keploy record -c "docker compose up" \
             --container-name "flask-web" \
-            --network-name "keploy-network" \
-            --path "$(pwd)/keploy-records" \
-            --config-path "." \
             --debug
         env:
           REVIEW_PORT: 8080
