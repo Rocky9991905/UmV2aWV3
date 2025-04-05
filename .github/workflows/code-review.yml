@@ -491,7 +491,12 @@ jobs:
         with:
           repository: ${{github.event.client_payload.repo}}
           token: ${{ secrets.PAT_OF_GITHUB }}
-          path: .
+          path: review
+      - name: Test GitHub API
+        run: |
+          curl -H "Authorization: token ${{ secrets.PAT_OF_GITHUB }}" \
+              https://api.github.com/repos/Per0x1de-1337/Review
+
       - name: Debug Checkout
         run: |
           echo "Current Directory: $(pwd)"
