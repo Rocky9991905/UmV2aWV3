@@ -571,8 +571,6 @@ jobs:
       #   run: ls -la ; pwd; ls -la review ; cd review/samples; docker compose up ;
       - name: Run Keploy
         run: |
-          ls -la;
-          pwd;
           ls -la review;
           cd review/samples ;
           keploy record -c "docker compose up" --buildDelay 60 --debug > keploy-run.log 2>&1 &
@@ -599,11 +597,8 @@ jobs:
         run: |
           echo "Current Directory $(pwd)"
           echo "Contents of the directory:"
-          ls -la
-          tree
       - name: testtt Keploy
         run: |
-          ls -la;
           pwd;
           ls -la review;
           cd review/samples ;
@@ -620,7 +615,7 @@ jobs:
 
       #     sudo keploy test -c ${{github.event.client_payload.command_for_running_application}} > keploy-test.log 2>&1 &
       - name: ghofa
-        run: cd review/samples;tree;cat review/samples/keploy/test-set-0/tests/test-1.yaml; tree 
+        run: cd review/samples;tree;cat keploy/test-set-0/tests/test-1.yaml ; cd keploy/reports/test-run-0/ ; cat *; tree 
       # - name: checkif working otr not
       #   run: curl localhost:6969
       # - name: Install Cloudflare Tunnel
