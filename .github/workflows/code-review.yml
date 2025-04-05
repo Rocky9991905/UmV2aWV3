@@ -700,7 +700,7 @@ jobs:
             DIR="/home/runner/work/UmV2aWV3/UmV2aWV3/keploy-review-agent"
 
             # Find the latest before_<DATE>.md file
-            BEFORE_MD=$(ls "$DIR"/before_*.md 2>/dev/null | sort | tail -n 1)
+            BEFORE_MD=$(ls "$DIR"/Before_*.md 2>/dev/null | sort | tail -n 1)
 
             # If no such file found, fallback to before.md or create an empty one
             if [ -z "$BEFORE_MD" ]; then
