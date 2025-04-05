@@ -567,6 +567,7 @@ jobs:
           sudo chmod 777 /tmp/keploy-records
       - name: Run Keploy
         run: |
+          cd samples;
           keploy record -c "docker compose up" \
             --container-name "flask-web" \
             --network-name "keploy-network" \
