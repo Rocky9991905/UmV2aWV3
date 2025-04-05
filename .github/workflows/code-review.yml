@@ -638,6 +638,55 @@ jobs:
       #     sudo keploy test -c ${{github.event.client_payload.command_for_running_application}} > keploy-test.log 2>&1 &
       - name: ghofa
         run: cd review/samples;tree; cd keploy/reports/test-run-0/ ; cat *;
+
+      - name: savien
+        run: |
+            echo '#!/bin/bash
+
+            REPORT_FILE="/home/runner/work/UmV2aWV3/UmV2aWV3/review/samples/keploy/reports/test-run-0/test-set-0-report.yaml"
+
+            # Check if report exists
+            if [ ! -f "$REPORT_FILE" ]; then
+                echo "Test report not found!"
+                exit 1
+            fi
+
+            # Parse results
+            TOTAL=$(grep "total:" $REPORT_FILE | awk '\''{print $2}'\'')
+            PASSED=$(grep "passed:" $REPORT_FILE | awk '\''{print $2}'\'')
+            FAILED=$(grep "failed:" $REPORT_FILE | awk '\''{print $2}'\'')
+
+            # Generate review content
+            echo "### Keploy Test Results" > /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+            echo "" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+            echo "| Total Tests | Passed | Failed |" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+            echo "|-------------|--------|--------|" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+            echo "| $TOTAL         | $PASSED     | $FAILED     |" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+
+            if [ "$FAILED" -gt 0 ]; then
+                echo "" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+                echo "#### Failed Tests:" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+
+                grep -A5 "status: failed" $REPORT_FILE | while read line; do
+                    if [[ "$line" == *"name:"* ]]; then
+                        TEST_NAME=$(echo "$line" | awk '\''{print $2}'\'')
+                        echo "- **Test Name**: $TEST_NAME" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+                    elif [[ "$line" == *"error:"* ]]; then
+                        ERROR_MSG=$(echo "$line" | sed '\''s/error: //'\'')
+                        echo "  - **Error**: $ERROR_MSG" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+                    fi
+                done
+            else
+                echo "" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+                echo "All tests passed successfully! 🎉" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+            fi
+
+            echo "Review saved in /home/runner/work/UmV2aWV3/UmV2aWV3/review.md"' > /home/runner/work/UmV2aWV3/UmV2aWV3/test-summary.sh
+      - name: Run test summary
+        run: chmod +x ./test-summary.sh && ./test-summary.sh
+        working-directory: /home/runner/work/UmV2aWV3/UmV2aWV3
+      - name: review.md
+        run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
       # - name: checkif working otr not
       #   run: curl localhost:6969
       # - name: Install Cloudflare Tunnel
