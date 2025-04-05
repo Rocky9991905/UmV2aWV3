@@ -592,7 +592,7 @@ jobs:
       #     sudo chmod 777 /tmp/keploy-records
       #     sudo keploy record -c "${{github.event.client_payload.command_for_running_application}}" --container-name "flask-web"  --debug
       - name: stop 5 sec
-        run: sleep 5
+        run: sleep 60
       - name: logs
         run: ls -la ; pwd ; cd review/samples ; ls -la ; cat keploy-run.log
       - name: curling
