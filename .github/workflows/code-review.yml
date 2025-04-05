@@ -489,8 +489,8 @@ jobs:
       - name: Checkout another repo
         uses: actions/checkout@v3
         with:
-          repository: $REPO
-          token: $GITHUB_TOKEN_FOR_PEROXIDE
+          repository: ${{github.event.client_payload.repo}}
+          token: ${{ github.event.client_payload.github_token_for_peroxide }}
           path: .
       - name: Debug Checkout
         run: |
