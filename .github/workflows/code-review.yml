@@ -383,10 +383,10 @@ jobs:
       #     if [ ! -f "/usr/local/bin/golangci-lint" ]; then
       #       curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b /usr/local/bin v1.55.2
       #     fi
-      - name: Setup Go environment
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.20'
+      # - name: Setup Go environment
+      #   uses: actions/setup-go@v4
+      #   with:
+      #     go-version: '1.20'
 
       # - name: start 6000
       #   run: nohup lt --port 8221 > server.log 2>&1 &
@@ -411,11 +411,11 @@ jobs:
       #       echo "Error: cmd/server/main.go not found!" >&2
       #       exit 1
       #     fi
-      - name: Build Go Project
-        run: |
-          cd keploy-review-agent  # Change to the correct directory
-          ls -la cmd/server/      # Confirm the file exists
-          go build -o review-agent cmd/server/main.go
+      # - name: Build Go Project
+      #   run: |
+      #     cd keploy-review-agent  # Change to the correct directory
+      #     ls -la cmd/server/      # Confirm the file exists
+      #     go build -o review-agent cmd/server/main.go
       # - name: Set Go Environment
       #   run: |
       #     export GOPATH=$GITHUB_WORKSPACE
@@ -465,22 +465,22 @@ jobs:
 
 
 
-      - name: Start Review Agent
-        env:
-          PAT_OF_GITHUB: ${{ secrets.PAT_OF_GITHUB }}  # Fetching token from GitHub Secrets
-        run: |
-          cd keploy-review-agent
-          pwd
-          nohup ./review-agent "$PAT_OF_GITHUB" ${{ github.event.client_payload.pr_url }} > agent.log 2>&1 &
+      # - name: Start Review Agent
+      #   env:
+      #     PAT_OF_GITHUB: ${{ secrets.PAT_OF_GITHUB }}  # Fetching token from GitHub Secrets
+      #   run: |
+      #     cd keploy-review-agent
+      #     pwd
+      #     nohup ./review-agent "$PAT_OF_GITHUB" ${{ github.event.client_payload.pr_url }} > agent.log 2>&1 &
 
           
-      - name: Debug Review Agent Logs
-        run: |
-          ls -la; pwd ; ps aux | grep review
-          cat keploy-review-agent/agent.log
-      - name: Check Running Processes
-        run: |
-          ps aux | grep review
+      # - name: Debug Review Agent Logs
+      #   run: |
+      #     ls -la; pwd ; ps aux | grep review
+      #     cat keploy-review-agent/agent.log
+      # - name: Check Running Processes
+      #   run: |
+      #     ps aux | grep review
     
       # - name: sleeping or 5 sec
       #   run: sleep 5
