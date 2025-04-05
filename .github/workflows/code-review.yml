@@ -555,11 +555,11 @@ jobs:
         run: |
           pip install flask
           docker network create keploy-network || true
-      - name:
-        run: |
-          sudo lsof -i :6379  # Redis port
-          sudo lsof -i :8080  # Flask port
-          sudo lsof -i :16789 # Keploy proxy
+      # - name:
+      #   run: |
+      #     sudo lsof -i :6379  # Redis port
+      #     sudo lsof -i :8080  # Flask port
+      #     sudo lsof -i :16789 # Keploy proxy
 
       - name: Prepare Keploy Environment
         run: |
