@@ -567,8 +567,8 @@ jobs:
           sudo chmod 777 /tmp/keploy-records
       - name: docker ps -a
         run: docker ps -a
-      - name: locally
-        run: ls -la ; pwd; ls -la review ; cd review/samples; docker compose up ;
+      # - name: locally
+      #   run: ls -la ; pwd; ls -la review ; cd review/samples; docker compose up ;
       - name: Run Keploy
         run: |
           ls -la;
