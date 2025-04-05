@@ -763,7 +763,7 @@ jobs:
           echo "pr_number: $pr_number"
       
           # Construct the API endpoint
-          API_URL="https://api.github.com/repos/$owner/$repo/pulls/$pr_number/comments"
+          API_URL="https://api.github.com/repos/$owner/$repo/issues/$pr_number/comments"
           echo "API_URL: $API_URL"
       
           # Prepare the comment body
