@@ -565,6 +565,8 @@ jobs:
         run: |
           sudo mkdir -p /tmp/keploy-records
           sudo chmod 777 /tmp/keploy-records
+      - name: docker ps -a
+        run: docker ps -a
       - name: Run Keploy
         run: |
           ls -la;
