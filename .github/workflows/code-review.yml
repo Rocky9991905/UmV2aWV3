@@ -575,24 +575,24 @@ jobs:
           pwd;
           ls -la review;
           cd review/samples ;
-          keploy record -c "docker compose up" --buildDelay 60 --debug
+          keploy record -c "docker compose up" --buildDelay 60 --debug > keploy-run.log 2>&1 &
 
         env:
           REVIEW_PORT: 8080
           WEBHOOK_PORT: 6969
         
         
-      - name: record with keploy
-        run: |
-          cd review
-          echo "Current Directory: $(pwd)"
-          echo "Contents of the directory:"
-          ls -la
-          cd samples;
-          ls -la
-          sudo mkdir -p /tmp/keploy-records
-          sudo chmod 777 /tmp/keploy-records
-          sudo keploy record -c "${{github.event.client_payload.command_for_running_application}}" --container-name "flask-web"  --debug
+      # - name: record with keploy
+      #   run: |
+      #     cd review
+      #     echo "Current Directory: $(pwd)"
+      #     echo "Contents of the directory:"
+      #     ls -la
+      #     cd samples;
+      #     ls -la
+      #     sudo mkdir -p /tmp/keploy-records
+      #     sudo chmod 777 /tmp/keploy-records
+      #     sudo keploy record -c "${{github.event.client_payload.command_for_running_application}}" --container-name "flask-web"  --debug
       - name: curling
         run: curl localhost:5000
       - name: debugging if files there or not
@@ -600,16 +600,27 @@ jobs:
           echo "Current Directory $(pwd)"
           echo "Contents of the directory:"
           ls -la
-      - name: testing
+          tree
+      - name: testtt Keploy
         run: |
-          cd review
-          echo "Current Directory: $(pwd)"
-          echo "Contents of the directory:"
-          ls -la
-          cd samples;
-          ls -la
+          ls -la;
+          pwd;
+          ls -la review;
+          cd review/samples ;
+          keploy test -c "docker compose up" --buildDelay 60 --debug > keploy-test.log 2>&1 &
 
-          sudo keploy test -c ${{github.event.client_payload.command_for_running_application}} > keploy-test.log 2>&1 &
+      # - name: testing
+      #   run: |
+      #     cd review
+      #     echo "Current Directory: $(pwd)"
+      #     echo "Contents of the directory:"
+      #     ls -la
+      #     cd samples;
+      #     ls -la
+
+      #     sudo keploy test -c ${{github.event.client_payload.command_for_running_application}} > keploy-test.log 2>&1 &
+      - name: ghofa
+        run: cd review/samples; tree 
       # - name: checkif working otr not
       #   run: curl localhost:6969
       # - name: Install Cloudflare Tunnel
