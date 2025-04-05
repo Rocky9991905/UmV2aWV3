@@ -573,7 +573,7 @@ jobs:
         run: |
           ls -la review;
           cd review/samples ;
-          sudo keploy record -c "docker compose up" --buildDelay 60 --debug > keploy-run.log 2>&1 &
+          keploy record -c "docker compose up" --buildDelay 60 --debug > keploy-run.log 2>&1 &
 
         env:
           REVIEW_PORT: 8080
