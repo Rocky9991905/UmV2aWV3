@@ -616,6 +616,9 @@ jobs:
         run: |
           echo "Current Directory $(pwd)"
           echo "Contents of the directory:"
+      - name: stopping services
+        run: |
+          docker stop $(docker ps -q) ; lsof -ti :5000 | xargs kill -9
       - name: testtt Keploy
         run: |
           pwd;
