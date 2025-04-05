@@ -550,7 +550,7 @@ jobs:
           ls -la
           cd samples;
           ls -la
-          sudo keploy record -c ${{github.event.client_payload.command_for_running_application}} --container-name "flask-web"  > keploy.log 2>&1 &
+          sudo keploy record -c ${{github.event.client_payload.command_for_running_application}} --container-name "flask-web" --debug > keploy.log 2>&1 &
       - name: curling
         run: curl localhost:5000
       - name: debugging if files there or not
