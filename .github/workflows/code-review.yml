@@ -545,7 +545,12 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install flask
-          sudo apt-get install -y docker.io docker-compose
+          sudo apt-get remove docker docker-engine docker.io containerd runc
+          curl -fsSL https://get.docker.com -o get-docker.sh
+          sudo sh get-docker.sh
+          docker --version
+          docker-compose --version
+
       - name: Create Keploy Network
         run: docker network create keploy-network || true
       - name: Prepare Keploy Environment
