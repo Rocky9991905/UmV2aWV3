@@ -540,6 +540,10 @@ jobs:
         run: sudo lsof -i :16789,26789
       - name: record with keploy
         run: |
+          cd review
+          echo "Current Directory: $(pwd)"
+          echo "Contents of the directory:"
+          ls -la
           sudo keploy record -c ${{github.event.client_payload.command_for_running_application}} --network host  --debug
       - name: debugging if files there or not
         run: |
@@ -547,7 +551,12 @@ jobs:
           echo "Contents of the directory:"
           ls -la
       - name: testing
-        run: sudo keploy test -c ${{github.event.client_payload.command_for_running_application}}
+        run: |
+          cd review
+          echo "Current Directory: $(pwd)"
+          echo "Contents of the directory:"
+          ls -la
+          sudo keploy test -c ${{github.event.client_payload.command_for_running_application}}
       # - name: checkif working otr not
       #   run: curl localhost:6969
       # - name: Install Cloudflare Tunnel
