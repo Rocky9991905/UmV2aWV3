@@ -526,9 +526,11 @@ jobs:
       - name: install the requriments of the repo
         run: |
           cd review;
-          echo ${{ github.event.client_payload.path_of_script.sh }}
-          echo "${{ github.event.client_payload.path_of_script.sh }}/script.sh"
-          chmod +x "${{ github.event.client_payload.path_of_script.sh }}/script.sh"
+          cat *
+          cat script.sh
+          # echo ${{ github.event.client_payload.path_of_script.sh }}
+          # echo "${{ github.event.client_payload.path_of_script.sh }}/script.sh"
+          chmod +x script.sh
           echo "Current Directory: $(pwd)"
           echo "Contents of the directory:"
           ls -la
