@@ -769,16 +769,43 @@ jobs:
           COMMENT_BODY=$(< /home/runner/work/UmV2aWV3/UmV2aWV3/final.md)
           # echo "COMMENT_BODY: $COMMENT_BODY"
           
+          # Escape special characters in COMMENT_BODY for valid JSON
+          ESCAPED_COMMENT_BODY=$(echo "$COMMENT_BODY" | jq -Rs .)
+          
+          # Send the comment using curl with properly escaped body
           curl -X POST \
             -H "Authorization: token ${{ secrets.PAT_OF_GITHUB }}" \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Content-Type: application/json" \
-            -d '{"body": "'"${COMMENT_BODY}"'"}' \
+            -d '{"body": '"$ESCAPED_COMMENT_BODY"'}' \
             "$API_URL"
+      
       
         # env:
           # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
+      - name: Send comment
+        if: github.event_name == 'repository_dispatch' && github.event.client_payload.repo != ''
+        run: |
+            pr_url="${{ github.event.client_payload.pr_url }}"
+            pr_path="${pr_url#*github.com/}"
+            owner_repo="${pr_path%%/pull*}"
+            owner="${owner_repo%/*}"
+            repo="${owner_repo#*/}"
+            pr_number="${{ github.event.client_payload.pr_number }}"
+            if [ -z "$pr_number" ]; then
+              pr_number="${pr_url##*/pull/}"
+            fi
+  
+            API_URL="https://api.github.com/repos/$owner/$repo/issues/$pr_number/comments"
+            COMMENT_BODY=$(< /home/runner/work/UmV2aWV3/UmV2aWV3/final.md)
+  
+            curl -X POST \
+              -H "Authorization: token ${{ secrets.PAT_OF_GITHUB }}" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -H "Content-Type: application/json" \
+              -d '{"body": "'"${COMMENT_BODY}"'"}' \
+              "$API_URL"
+  
 
       
       
