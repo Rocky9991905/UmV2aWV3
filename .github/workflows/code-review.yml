@@ -733,7 +733,7 @@ jobs:
       - name: cat final.md
         run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/final.md
 
-        - name: Send comment
+      - name: Send comment
         run: |
           # Enable debugging
           
