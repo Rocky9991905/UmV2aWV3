@@ -791,21 +791,23 @@ jobs:
             owner_repo="${pr_path%%/pull*}"
             owner="${owner_repo%/*}"
             repo="${owner_repo#*/}"
+        
             pr_number="${{ github.event.client_payload.pr_number }}"
             if [ -z "$pr_number" ]; then
               pr_number="${pr_url##*/pull/}"
             fi
-  
+        
             API_URL="https://api.github.com/repos/$owner/$repo/issues/$pr_number/comments"
+        
             COMMENT_BODY=$(< /home/runner/work/UmV2aWV3/UmV2aWV3/final.md)
-  
+        
             curl -X POST \
               -H "Authorization: token ${{ secrets.PAT_OF_GITHUB }}" \
               -H "Accept: application/vnd.github.v3+json" \
               -H "Content-Type: application/json" \
-              -d '{"body": "'"${COMMENT_BODY}"'"}' \
+              -d "{\"body\": $(jq -Rs . <<< \"$COMMENT_BODY\")}" \
               "$API_URL"
-  
+        
 
       
       
