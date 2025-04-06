@@ -769,14 +769,14 @@ jobs:
           COMMENT_BODY=$(< /home/runner/work/UmV2aWV3/UmV2aWV3/final.md)
           # echo "COMMENT_BODY: $COMMENT_BODY"
           curl -X POST \
-            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Authorization: token ${{ secrets.PAT_OF_GITHUB }}" \
             -H "Accept: application/vnd.github.v3+json" \
             -H "Content-Type: application/json" \
             -d "{\"body\": \"$COMMENT_BODY\"}" \
             "$API_URL"
   
         # env:
-        #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
 
       
