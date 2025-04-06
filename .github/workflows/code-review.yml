@@ -831,12 +831,12 @@ jobs:
             echo "Generated JWT: $JWT"
             
             # Get installation token for the repository
-            INSTALL_TOKEN=$(curl -s -X POST \
-              -H "Authorization: Bearer $JWT" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/app/installations/${{ secrets.BOT_INSTALLATION_ID }}/access_tokens" \
-              | jq -r '.token')
-            
+            # INSTALL_TOKEN=$(curl -s -X POST \
+            #   -H "Authorization: Bearer $JWT" \
+            #   -H "Accept: application/vnd.github.v3+json" \
+            #   "https://api.github.com/app/installations/${{ secrets.BOT_INSTALLATION_ID }}/access_tokens" \
+            #   | jq -r '.token')
+            export INSTALL_TOKEN="ghs_1Z0q3xdGBzTGau9flOQNvOq1lDJffY3yeq6s"
             echo "Installation Token: $INSTALL_TOKEN"
             
             # Remove private key file
