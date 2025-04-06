@@ -783,30 +783,82 @@ jobs:
       
         # env:
           # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Send comment
-        if: github.event_name == 'repository_dispatch' && github.event.client_payload.repo != ''
+      - name: Send comment as bot
         run: |
+            # Extract PR details
             pr_url="${{ github.event.client_payload.pr_url }}"
+            echo "PR URL: $pr_url"
+            
             pr_path="${pr_url#*github.com/}"
+            echo "PR Path: $pr_path"
+            
             owner_repo="${pr_path%%/pull*}"
+            echo "Owner/Repo: $owner_repo"
+            
             owner="${owner_repo%/*}"
+            echo "Owner: $owner"
+            
             repo="${owner_repo#*/}"
-        
+            echo "Repo: $repo"
+            
+            # Get PR number
             pr_number="${{ github.event.client_payload.pr_number }}"
             if [ -z "$pr_number" ]; then
               pr_number="${pr_url##*/pull/}"
             fi
-        
-            API_URL="https://api.github.com/repos/$owner/$repo/issues/$pr_number/comments"
-        
+            echo "PR Number: $pr_number"
+            
+            # Generate JWT token for GitHub App authentication
+            APP_ID="${{ secrets.BOT_APP_ID }}"
+            echo "App ID: $APP_ID"
+            
+            PRIVATE_KEY="${{ secrets.BOT_PRIVATE_KEY }}"
+            echo "Private Key: [hidden for security]" # Avoid printing private key for security reasons
+            
+            # Create a temporary file for the private key
+            echo "$PRIVATE_KEY" > private-key.pem
+            echo "Private key written to temporary file"
+            
+            # Generate JWT token using OpenSSL (valid for 10 minutes)
+            NOW=$(date +%s)
+            EXPIRATION=$((NOW + 600))
+            echo "JWT Expiration: $EXPIRATION"
+            
+            HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | base64 | tr -d '=' | tr '/+' '_-')
+            PAYLOAD=$(echo -n '{"iat":'"$NOW"',"exp":'"$EXPIRATION"',"iss":'"$APP_ID"'}' | base64 | tr -d '=' | tr '/+' '_-')
+            SIGNATURE=$(echo -n "$HEADER.$PAYLOAD" | openssl dgst -sha256 -sign private-key.pem | base64 | tr -d '=' | tr '/+' '_-')
+            JWT="$HEADER.$PAYLOAD.$SIGNATURE"
+            echo "Generated JWT: $JWT"
+            
+            # Get installation token for the repository
+            INSTALL_TOKEN=$(curl -s -X POST \
+              -H "Authorization: Bearer $JWT" \
+              -H "Accept: application/vnd.github.v3+json" \
+              "https://api.github.com/app/installations/${{ secrets.BOT_INSTALLATION_ID }}/access_tokens" \
+              | jq -r '.token')
+            
+            echo "Installation Token: $INSTALL_TOKEN"
+            
+            # Remove private key file
+            rm private-key.pem
+            echo "Private key file removed"
+            
+            # Prepare comment body
             COMMENT_BODY=$(< /home/runner/work/UmV2aWV3/UmV2aWV3/final.md)
-        
-            curl -X POST \
-              -H "Authorization: token ${{ secrets.PAT_OF_GITHUB }}" \
+            echo "Comment body read from file"
+            
+            ESCAPED_COMMENT_BODY=$(echo "$COMMENT_BODY" | jq -Rs .)
+            echo "Escaped comment body: $ESCAPED_COMMENT_BODY"
+            
+            # Post comment using installation token
+            RESPONSE=$(curl -X POST \
+              -H "Authorization: token $INSTALL_TOKEN" \
               -H "Accept: application/vnd.github.v3+json" \
               -H "Content-Type: application/json" \
-              -d "{\"body\": $(jq -Rs . <<< \"$COMMENT_BODY\")}" \
-              "$API_URL"
+              -d '{"body": '"$ESCAPED_COMMENT_BODY"'}' \
+              "https://api.github.com/repos/$owner/$repo/issues/$pr_number/comments")
+            
+            echo "Response from GitHub API: $RESPONSE"
         
 
       
