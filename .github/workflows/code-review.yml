@@ -709,7 +709,7 @@ jobs:
                 [ -f "$BEFORE_MD" ] || touch "$BEFORE_MD"
             fi
 
-            FINAL_MD="/home/runner/work/UmV2aWV3/UmV2aWV3/final.txt"
+            FINAL_MD="/home/runner/work/UmV2aWV3/UmV2aWV3/raw_final.txt"
 
             # Keploy Test Results
             TEST_RESULTS=$(cat <<EOF
@@ -719,7 +719,7 @@ jobs:
             EOF
             )
 
-            # Create final.txt with combined content
+            # Create raw_final.txt with combined content
             {
                 cat "$BEFORE_MD"
                 echo -e "\n\n### Keploy Test Results"
@@ -730,35 +730,35 @@ jobs:
       - name: Run final summary
         run: chmod +x ./comb.sh && ./comb.sh
         working-directory: /home/runner/work/UmV2aWV3/UmV2aWV3
-      - name: cat final.txt
-        run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt ; cp  /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt /home/runner/work/UmV2aWV3/UmV2aWV3/raw.txt
+      - name: cat raw_final.txt
+        run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/raw_final.txt ;
       - name: The final boss
         run: |
-          echo -e "## Automated Review Comments\n\nThank you for raising this pull request. Below are the review comments:\n\n## Review from Static Analyzer (NAME OF STATIC ANALYZER TOOL(eg.Eslint)):\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  (GENERAL REVIEW FROM THE STATIC ANALYZER)\n\n## Review from Dependency Analyzer [deps.dev]:\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  (GENERAL REVIEW FROM the Dependency ANALYZER)\n\n## Review from LLM Analyzer (Gemini flash 2.0):\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  [GENERAL REVIEW FROM THE LLM ANALYZER]" >> /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt
+          echo -e "## Automated Review Comments\n\nThank you for raising this pull request. Below are the review comments:\n\n## Review from Static Analyzer (NAME OF STATIC ANALYZER TOOL(eg.Eslint)):\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  (GENERAL REVIEW FROM THE STATIC ANALYZER)\n\n## Review from Dependency Analyzer [deps.dev]:\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  (GENERAL REVIEW FROM the Dependency ANALYZER)\n\n## Review from LLM Analyzer (Gemini flash 2.0):\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  [GENERAL REVIEW FROM THE LLM ANALYZER]" >> /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown.txt
       - name: Get respos
         run: |
           RESPONSE=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAfGwfrEkj8fXjALdqF2Ih2Xik11gbSFc0" \
           -H "Content-Type: application/json" \
           -X POST \
-          -d "$(jq -n --arg txt "$(cat /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt)" '{"contents":[{"parts":[{"text":$txt}]}]}')")
+          -d "$(jq -n --arg txt "$(cat /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown.txt)" '{"contents":[{"parts":[{"text":$txt}]}]}')")
 
           echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text' > /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown.md
-      - name: Prompt for Markdown
-        run: cp /home/runner/work/UmV2aWV3/UmV2aWV3/raw.txt /home/runner/work/UmV2aWV3/UmV2aWV3/markdown_prompt.txt && echo -e "I have given you the text above which are the results from many analyzers and some important. So you have to make a detailed report in markdown which encapsulates the above report. DONT use any sort of emoji's. STRICTLY be in the following format:\n\n## Automated Review Comments\nBelow are the review comments:\n\n## Review from Static Analyzer (NAME OF STATIC ANALYZER TOOL (e.g., Eslint)):\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - (A detailed review of those issues. DONT stretch each issue too long, try to keep a max of 30 words per issue. USE bullet points for the issues)\n\n## Review from Dependency Analyzer [deps.dev]:\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - (GENERAL REVIEW FROM THE Dependency ANALYZER)\n\n## Review from LLM Analyzer (Gemini flash 2.0):\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - [GENERAL REVIEW FROM THE LLM ANALYZER]\n\n## Review from Keploy Test Cases:\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - [GENERAL REVIEW FROM THE KEPLOY TEST CASE ANALYSIS]" >> /home/runner/work/UmV2aWV3/UmV2aWV3/markdown_prompt.txt
+      - name: Prompt for Detailed Markdown
+        run: cp /home/runner/work/UmV2aWV3/UmV2aWV3/raw.txt /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown_detailed.txt && echo -e "I have given you the text above which are the results from many analyzers and some important. So you have to make a detailed report in markdown which encapsulates the above report. DONT use any sort of emoji's. STRICTLY be in the following format:\n\n## Automated Review Comments\nBelow are the review comments:\n\n## Review from Static Analyzer (NAME OF STATIC ANALYZER TOOL (e.g., Eslint)):\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - (A detailed review of those issues. DONT stretch each issue too long, try to keep a max of 30 words per issue. USE bullet points for the issues)\n\n## Review from Dependency Analyzer [deps.dev]:\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - (GENERAL REVIEW FROM THE Dependency ANALYZER)\n\n## Review from LLM Analyzer (Gemini flash 2.0):\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - [GENERAL REVIEW FROM THE LLM ANALYZER]\n\n## Review from Keploy Test Cases:\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - [GENERAL REVIEW FROM THE KEPLOY TEST CASE ANALYSIS]" >> /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown_detailed.txt
       - name: detailed markdown
         run: | 
           RESPONSE1=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAfGwfrEkj8fXjALdqF2Ih2Xik11gbSFc0" \
           -H "Content-Type:application/json" \
           -X POST \
-          -d "$(jq -n --arg txt "$(cat /home/runner/work/UmV2aWV3/UmV2aWV3/markdown_prompt.txt)" '{"contents":[{"parts":[{"text":$txt}]}]}')")
+          -d "$(jq -n --arg txt "$(cat /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown_detailed.txt)" '{"contents":[{"parts":[{"text":$txt}]}]}')")
 
-          echo "$RESPONSE1" | jq -r '.candidates[0].content.parts[0].text' > /home/runner/work/UmV2aWV3/UmV2aWV3/finalmarkdown.md
-      - name: see the markdown detailed
-        run : cat /home/runner/work/UmV2aWV3/UmV2aWV3/finalmarkdown.md
+          echo "$RESPONSE1" | jq -r '.candidates[0].content.parts[0].text' > /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_detailed.md
+      # - name: see the markdown detailed
+      #   run : cat /home/runner/work/UmV2aWV3/UmV2aWV3/finalmarkdown.md
       # - name: convert markdown detailed into pdf
       #   run: sudo apt install pandoc ; pandoc /home/runner/work/UmV2aWV3/UmV2aWV3/finalmarkdown.md -o /home/runner/work/UmV2aWV3/UmV2aWV3/finalPDF.pdf -V title="PeroxideBOT review" -V author="Peroxide"
       - name: dpaste markdown
-        run: curl -s -F "syntax=md" -F "content=</home/runner/work/UmV2aWV3/UmV2aWV3/finalmarkdown.md" http://dpaste.com/api/v2/ > /home/runner/work/UmV2aWV3/UmV2aWV3/markdownurl.txt
+        run: curl -s -F "syntax=md" -F "content=</home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_detailed.md" http://dpaste.com/api/v2/ > /home/runner/work/UmV2aWV3/UmV2aWV3/markdownurl.txt
       - name: append the you can visit for details
         run: echo -e "You can checkout the detailed review here [Markdown]($(cat /home/runner/work/UmV2aWV3/UmV2aWV3/markdownurl.txt))" >> /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown.md
       - name: Send comment as bot
