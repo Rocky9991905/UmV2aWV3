@@ -759,10 +759,10 @@ jobs:
           echo "$RESPONSE1" | jq -r '.candidates[0].content.parts[0].text' > /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_detailed.md
 
       - name: dpaste markdown
-        run: curl -s -F "syntax=md" -F "content=</home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_detailed.md" http://dpaste.com/api/v2/ > /home/runner/work/UmV2aWV3/UmV2aWV3/markdownurl.txt
+        run: curl -s -F "syntax=md" -F "content=</home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_small.md" http://dpaste.com/api/v2/ > /home/runner/work/UmV2aWV3/UmV2aWV3/markdownurl.txt
 
       - name: Append dpaste link to small summary
-        run: echo -e "\n\nYou can checkout the detailed review here [Markdown]($(cat /home/runner/work/UmV2aWV3/UmV2aWV3/markdownurl.txt))" >> /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_small.md
+        run: echo -e "\n\nYou can checkout the detailed review here [Markdown]($(cat /home/runner/work/UmV2aWV3/UmV2aWV3/markdownurl.txt))" >> /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_detailed.md
 
       - name: Send comment as bot
         run: |
@@ -799,7 +799,7 @@ jobs:
 
           rm private-key.pem
 
-          COMMENT_BODY=$(< /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_small.md)
+          COMMENT_BODY=$(< /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_detailed.md)
           ESCAPED_COMMENT_BODY=$(echo "$COMMENT_BODY" | jq -Rs .)
 
           curl -X POST \
