@@ -812,7 +812,7 @@ jobs:
           rm private-key.pem
           
           # Prepare comment body
-          COMMENT_BODY=$(< /home/runner/work/UmV2aWV3/UmV2aWV3/final.)
+          COMMENT_BODY=$(< /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt)
           ESCAPED_COMMENT_BODY=$(echo "$COMMENT_BODY" | jq -Rs .)
           
           # Send comment details to your webhook
