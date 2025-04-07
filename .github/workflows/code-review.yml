@@ -762,7 +762,8 @@ jobs:
 
       - name: Append dpaste link to small summary
         run: echo -e "\n\nYou can checkout the detailed review here [Markdown]($(cat /home/runner/work/UmV2aWV3/UmV2aWV3/markdownurl.txt))" >> /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_small.md
-
+      - name: cat debug
+        run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/raw_final.txt ; cat /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown.txt	; cat /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_small.md	 ;  cat /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown_detailed.txt	; cat /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_detailed.md	
       - name: Send comment as bot
         run: |
           pr_url="${{ github.event.client_payload.pr_url }}"
