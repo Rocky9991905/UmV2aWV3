@@ -1364,6 +1364,7 @@ jobs:
       #   run: ls -la ; pwd ; cd review/samples ; ls -la ; cat keploy-run.log
       - name: Run Curl Commands
         run: |
+          cd review;
           chmod +x test.sh
           ./test.sh
       - name: debugging if files there or not
