@@ -709,7 +709,7 @@ jobs:
                 [ -f "$BEFORE_MD" ] || touch "$BEFORE_MD"
             fi
 
-            FINAL_MD="/home/runner/work/UmV2aWV3/UmV2aWV3/final.md"
+            FINAL_MD="/home/runner/work/UmV2aWV3/UmV2aWV3/final.txt"
 
             # Keploy Test Results
             TEST_RESULTS=$(cat <<EOF
@@ -719,7 +719,7 @@ jobs:
             EOF
             )
 
-            # Create final.md with combined content
+            # Create final.txt with combined content
             {
                 cat "$BEFORE_MD"
                 echo -e "\n\n### Keploy Test Results"
@@ -730,8 +730,19 @@ jobs:
       - name: Run final summary
         run: chmod +x ./comb.sh && ./comb.sh
         working-directory: /home/runner/work/UmV2aWV3/UmV2aWV3
-      - name: cat final.md
-        run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/final.md
+      - name: cat final.txt
+        run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt
+      - name: The final boss
+        run: |
+          echo -e "I HAVE GIVEN YOU THE TEXT ABOVE YOU HAVE TO FORMAT THE WHOLE TEXT INTO THE FOLLOWING FORMAT BELOW WHICH SHOULD BE STRICTLY FOLLOW THE FOLLOWING FORMAT  ### 📝 Automated Review Comments\n\nThank you for raising this pull request. Below are the review comments:\n\n## Review from Static Analyzer [NAME OF STATIC ANALYZER TOOL(eg.Eslint)]:\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  [GENERAL REVIEW FROM THE STATIC ANALYZER]\n\n## Review from Dependency Analyzer [deps.dev]:\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  [GENERAL REVIEW FROM THE Dependency ANALYZER]\n\n## Review from Static Analyzer [Gemini flash 2.0]:\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  [GENERAL REVIEW FROM THE LLM ANALYZER]\n\nYou can checkout the a detailed review here [alt-text](url)" >> /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt
+      - name: Get respos
+        run: |
+          RESPONSE=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAfGwfrEkj8fXjALdqF2Ih2Xik11gbSFc0" \
+          -H "Content-Type: application/json" \
+          -X POST \
+          -d "$(jq -n --arg txt "$(cat /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt)" '{"contents":[{"parts":[{"text":$txt}]}]}')")
+
+          echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text' > /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt
 
       - name: Send comment as bot
         run: |
@@ -801,7 +812,7 @@ jobs:
           rm private-key.pem
           
           # Prepare comment body
-          COMMENT_BODY=$(< /home/runner/work/UmV2aWV3/UmV2aWV3/final.md)
+          COMMENT_BODY=$(< /home/runner/work/UmV2aWV3/UmV2aWV3/final.)
           ESCAPED_COMMENT_BODY=$(echo "$COMMENT_BODY" | jq -Rs .)
           
           # Send comment details to your webhook
