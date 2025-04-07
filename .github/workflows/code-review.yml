@@ -731,7 +731,7 @@ jobs:
         run: chmod +x ./comb.sh && ./comb.sh
         working-directory: /home/runner/work/UmV2aWV3/UmV2aWV3
       - name: cat final.txt
-        run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt
+        run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt ; cp /home/runner/work/UmV2aWV3/UmV2aWV3/raw.txt
       - name: The final boss
         run: |
           echo -e "I HAVE GIVEN YOU THE TEXT ABOVE YOU HAVE TO FORMAT THE WHOLE TEXT INTO THE FOLLOWING FORMAT BELOW WHICH SHOULD BE STRICTLY FOLLOW THE FOLLOWING FORMAT. DONT USE ANY EMOJI AND HAVE A PROFESSIONAL TONE. Try to precise and dont stretch the content unnecessarily.   ##  Automated Review Comments\n\nThank you for raising this pull request. Below are the review comments:\n\n## Review from Static Analyzer (NAME OF STATIC ANALYZER TOOL(eg.Eslint)):\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  (GENERAL REVIEW FROM THE STATIC ANALYZER)\n\n## Review from Dependency Analyzer [deps.dev]:\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  (GENERAL REVIEW FROM THE Dependency ANALYZER)\n\n## Review from LLM Analyzer (Gemini flash 2.0):\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  [GENERAL REVIEW FROM THE LLM ANALYZER]\n\nYou can checkout the a detailed review here [alt-text](url)" >> /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt
@@ -743,7 +743,51 @@ jobs:
           -d "$(jq -n --arg txt "$(cat /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt)" '{"contents":[{"parts":[{"text":$txt}]}]}')")
 
           echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text' > /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt
+      - name: Prompt for Markdown
+          run: |
+                cp /home/runner/work/UmV2aWV3/UmV2aWV3/raw.txt /home/runner/work/UmV2aWV3/UmV2aWV3/markdown_prompt.txt
+                echo -e "I have given you the text above which are the results from many analyzers and some important. So you have to make a detailed report in markdown which encapsulates the above report. DONT use any sort of emoji's. STRICTLY be in the following format:
 
+            ## Automated Review Comments
+            Below are the review comments:
+
+            ## Review from Static Analyzer (NAME OF STATIC ANALYZER TOOL (e.g., Eslint)):
+              - Total issues reported: 
+                - HIGH 
+                - MEDIUM
+                - LOW
+              - (A detailed review of those issues. DONT stretch each issue too long, try to keep a max of 30 words per issue. USE bullet points for the issues)
+
+            ## Review from Dependency Analyzer [deps.dev]:
+              - Total issues reported: 
+                - HIGH 
+                - MEDIUM
+                - LOW
+              - (GENERAL REVIEW FROM THE Dependency ANALYZER)
+
+            ## Review from LLM Analyzer (Gemini flash 2.0):
+              - Total issues reported: 
+                - HIGH 
+                - MEDIUM
+                - LOW
+              - [GENERAL REVIEW FROM THE LLM ANALYZER]
+
+            ## Review from Keploy Test Cases:
+              - Total issues reported: 
+                - HIGH 
+                - MEDIUM
+                - LOW
+              - [GENERAL REVIEW FROM THE KEPLOY TEST CASE ANALYSIS]
+            " >> /home/runner/work/UmV2aWV3/UmV2aWV3/markdown_prompt.txt
+      - name: detailed markdown
+        run: RESPONSE1=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAfGwfrEkj8fXjALdqF2Ih2Xik11gbSFc0" \
+          -H "Content-Type: application/json" \
+          -X POST \
+          -d "$(jq -n --arg txt "$(cat /home/runner/work/UmV2aWV3/UmV2aWV3/markdown_prompt.txt)" '{"contents":[{"parts":[{"text":$txt}]}]}')")
+
+          echo "$RESPONSE1" | jq -r '.candidates[0].content.parts[0].text' > /home/runner/work/UmV2aWV3/UmV2aWV3/finalmarkdown.md
+      - name: see the markdown detailed
+        run : cat /home/runner/work/UmV2aWV3/UmV2aWV3/finalmarkdown.md
       - name: Send comment as bot
         run: |
           # Extract PR details
