@@ -755,8 +755,8 @@ jobs:
           echo "$RESPONSE1" | jq -r '.candidates[0].content.parts[0].text' > /home/runner/work/UmV2aWV3/UmV2aWV3/finalmarkdown.md
       - name: see the markdown detailed
         run : cat /home/runner/work/UmV2aWV3/UmV2aWV3/finalmarkdown.md
-      - name: convert markdown detailed into pdf
-        run: sudo apt install pandoc ; pandoc /home/runner/work/UmV2aWV3/UmV2aWV3/finalmarkdown.md -o /home/runner/work/UmV2aWV3/UmV2aWV3/finalPDF.pdf -V title="PeroxideBOT review" -V author="Peroxide"
+      # - name: convert markdown detailed into pdf
+      #   run: sudo apt install pandoc ; pandoc /home/runner/work/UmV2aWV3/UmV2aWV3/finalmarkdown.md -o /home/runner/work/UmV2aWV3/UmV2aWV3/finalPDF.pdf -V title="PeroxideBOT review" -V author="Peroxide"
       - name: dpaste markdown
         run: curl -s -F "syntax=md" -F "content=</home/runner/work/UmV2aWV3/UmV2aWV3/finalmarkdown.md" http://dpaste.com/api/v2/ > /home/runner/work/UmV2aWV3/UmV2aWV3/markdownurl.txt
       - name: append the you can visit for details
