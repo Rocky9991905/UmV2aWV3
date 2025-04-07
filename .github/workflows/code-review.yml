@@ -731,7 +731,7 @@ jobs:
         run: chmod +x ./comb.sh && ./comb.sh
         working-directory: /home/runner/work/UmV2aWV3/UmV2aWV3
       - name: cat final.txt
-        run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt ; cp /home/runner/work/UmV2aWV3/UmV2aWV3/raw.txt
+        run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt ; cp  /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt /home/runner/work/UmV2aWV3/UmV2aWV3/raw.txt
       - name: The final boss
         run: |
           echo -e "I HAVE GIVEN YOU THE TEXT ABOVE YOU HAVE TO FORMAT THE WHOLE TEXT INTO THE FOLLOWING FORMAT BELOW WHICH SHOULD BE STRICTLY FOLLOW THE FOLLOWING FORMAT. DONT USE ANY EMOJI AND HAVE A PROFESSIONAL TONE. Try to precise and dont stretch the content unnecessarily.   ##  Automated Review Comments\n\nThank you for raising this pull request. Below are the review comments:\n\n## Review from Static Analyzer (NAME OF STATIC ANALYZER TOOL(eg.Eslint)):\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  (GENERAL REVIEW FROM THE STATIC ANALYZER)\n\n## Review from Dependency Analyzer [deps.dev]:\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  (GENERAL REVIEW FROM THE Dependency ANALYZER)\n\n## Review from LLM Analyzer (Gemini flash 2.0):\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  [GENERAL REVIEW FROM THE LLM ANALYZER]\n\nYou can checkout the a detailed review here [alt-text](url)" >> /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt
