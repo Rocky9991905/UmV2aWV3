@@ -734,7 +734,7 @@ jobs:
         run: cat /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt ; cp  /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt /home/runner/work/UmV2aWV3/UmV2aWV3/raw.txt
       - name: The final boss
         run: |
-          echo -e "I HAVE GIVEN YOU THE TEXT ABOVE YOU HAVE TO FORMAT THE WHOLE TEXT INTO THE FOLLOWING FORMAT BELOW WHICH SHOULD BE STRICTLY FOLLOW THE FOLLOWING FORMAT. DONT USE ANY EMOJI AND HAVE A PROFESSIONAL TONE. Try to precise and dont stretch the content unnecessarily.   ##  Automated Review Comments\n\nThank you for raising this pull request. Below are the review comments:\n\n## Review from Static Analyzer (NAME OF STATIC ANALYZER TOOL(eg.Eslint)):\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  (GENERAL REVIEW FROM THE STATIC ANALYZER)\n\n## Review from Dependency Analyzer [deps.dev]:\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  (GENERAL REVIEW FROM THE Dependency ANALYZER)\n\n## Review from LLM Analyzer (Gemini flash 2.0):\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  [GENERAL REVIEW FROM THE LLM ANALYZER]\n\nYou can checkout the a detailed review here [alt-text](url)" >> /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt
+          echo -e "## Automated Review Comments\n\nThank you for raising this pull request. Below are the review comments:\n\n## Review from Static Analyzer (NAME OF STATIC ANALYZER TOOL(eg.Eslint)):\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  (GENERAL REVIEW FROM THE STATIC ANALYZER)\n\n## Review from Dependency Analyzer [deps.dev]:\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  (GENERAL REVIEW FROM the Dependency ANALYZER)\n\n## Review from LLM Analyzer (Gemini flash 2.0):\n  -  - Total issues reported : \n     -  HIGH \n     -  MEDIUM\n     -  LOW\n  -  [GENERAL REVIEW FROM THE LLM ANALYZER]" >> /home/runner/work/UmV2aWV3/UmV2aWV3/final.txt
       - name: Get respos
         run: |
           RESPONSE=$(curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAfGwfrEkj8fXjALdqF2Ih2Xik11gbSFc0" \
@@ -755,6 +755,12 @@ jobs:
           echo "$RESPONSE1" | jq -r '.candidates[0].content.parts[0].text' > /home/runner/work/UmV2aWV3/UmV2aWV3/finalmarkdown.md
       - name: see the markdown detailed
         run : cat /home/runner/work/UmV2aWV3/UmV2aWV3/finalmarkdown.md
+      - name: convert markdown detailed into pdf
+        run: sudo apt install pandoc ; pandoc /home/runner/work/UmV2aWV3/UmV2aWV3/finalmarkdown.md -o /home/runner/work/UmV2aWV3/UmV2aWV3/finalPDF.pdf -V title="PeroxideBOT review" -V author="Peroxide"
+      - name: dpaste markdown
+        run: curl -s -F "syntax=md" -F "content=</home/runner/work/UmV2aWV3/UmV2aWV3/finalmarkdown.md" http://dpaste.com/api/v2/ > /home/runner/work/UmV2aWV3/UmV2aWV3/markdownurl.txt
+      - name: append the you can visit for details
+        run: echo -e "You can checkout the detailed review here [Markdown]($(cat /home/runner/work/UmV2aWV3/UmV2aWV3/markdownurl.txt))" >> /home/runner/work/UmV2aWV3/UmV2aWV3/finalmarkdown.md
       - name: Send comment as bot
         run: |
           # Extract PR details
