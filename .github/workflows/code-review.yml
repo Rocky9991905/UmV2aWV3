@@ -1092,18 +1092,25 @@ jobs:
           echo "COMMAND_FOR_RUNNING_APPLICATION=${{ github.event.client_payload.command_for_running_application }}" >> $GITHUB_ENV
           echo "GITHUB_TOKEN_FOR_PEROXIDE=${{ github.event.client_payload.github_token_for_peroxide }}" >> $GITHUB_ENV
           echo "DELAY_IN_SECONDS=${{ github.event.client_payload.Delay_in_seconds }}" >> $GITHUB_ENV
-          echo "PATH_OF_SCRIPT_SH=${{ github.event.client_payload.path_of_script.sh }}" >> $GITHUB_ENV
+          echo "PATH_OF_SCRIPT_SH=${{ github.event.client_payload.path_of_script_sh }}" >> $GITHUB_ENV
           echo "REPO=${{ github.event.client_payload.repo }}" >> $GITHUB_ENV
           echo "GEMINI_API_KEY=${{ github.event.client_payload.gemini_api_key }}" >> $GITHUB_ENV
           echo "BUILD_DELAY=${{ github.event.client_payload.buildDelay }}" >> $GITHUB_ENV
-          echo "LOCATION_FROM_WHERE_WE_HAVE_TO_EXECUTE_THE_COMMAND"=${{github.event.client_payload.location_from_where_we_have_to_execute_the_command}} >> $GITHUB_ENV"
-          echo "PORTS=${{github.event.client_payload.ports}}" >> $GITHUB_ENV
-          echo "all the data got from the PR"
-          echo "${GITHUB_TOKEN_FOR_PEROXIDE}"
-          echo "${COMMAND_FOR_RUNNING_APPLICATION}"
-          echo "${DELAY_IN_SECONDS}"
-          echo "${PATH_OF_SCRIPT_SH}"
-          echo "${REPO}"
+          echo "LOCATION_FROM_WHERE_WE_HAVE_TO_EXECUTE_THE_COMMAND=${{ github.event.client_payload.location_from_where_we_have_to_execute_the_command }}" >> $GITHUB_ENV
+          echo "PORTS=${{ github.event.client_payload.ports }}" >> $GITHUB_ENV
+
+          # Debug: Display the values
+          echo "All the data got from the PR:"
+          echo "PR_URL=${{ github.event.client_payload.pr_url }}"
+          echo "COMMAND_FOR_RUNNING_APPLICATION=${{ github.event.client_payload.command_for_running_application }}"
+          echo "DELAY_IN_SECONDS=${{ github.event.client_payload.Delay_in_seconds }}"
+          echo "PATH_OF_SCRIPT_SH=${{ github.event.client_payload.path_of_script_sh }}"
+          echo "REPO=${{ github.event.client_payload.repo }}"
+          echo "GEMINI_API_KEY=${{ github.event.client_payload.gemini_api_key }}"
+          echo "BUILD_DELAY=${{ github.event.client_payload.buildDelay }}"
+          echo "LOCATION_FROM_WHERE_WE_HAVE_TO_EXECUTE_THE_COMMAND=${{ github.event.client_payload.location_from_where_we_have_to_execute_the_command }}"
+          echo "PORTS=${{ github.event.client_payload.ports }}"
+
       - name: Update system packages
         run: sudo apt update
 
